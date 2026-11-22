@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Holiday-Rental Dual Agent Sandbox (Back-Office PMS + Sales Gate)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Work Sans', sans-serif; background: #090d16; color: #f1f5f9; font-variant-numeric: tabular-nums; }
+    h1, h2, h3, .font-display { font-family: 'Outfit', sans-serif; }
+    .accent-pill { background: rgba(139,92,246,0.18); color: #c4b5fd; border: 1px solid #8b5cf655; }
+    .accent-btn { background: #8b5cf6; color: #090d16; font-weight: 600; }
+    .accent-btn:hover { filter: brightness(1.08); }
+    .card { background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(51, 65, 85, 0.8); border-radius: 16px; }
+  </style>
+</head>
+<body class="min-h-screen antialiased p-4 sm:p-8">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <header class="card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="space-y-1">
+        <span class="accent-pill inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold">2 AGENTS · STRICT ACCEPTANCE SUITE</span>
+        <h1 class="text-xl sm:text-2xl font-bold text-white">Holiday-Rental Dual Agent Sandbox (Back-Office PMS + Sales Gate)</h1>
+        <p class="text-xs sm:text-sm text-slate-400">Verifies Acceptance Criteria #1-#5: Channel Rate Gap Detection, Mandatory Approval, Guest-Message Refusal & 6th-Msg Signup Gate</p>
+      </div>
+      <span class="text-xs font-mono text-slate-400">Interactive Engineering Prototype</span>
+    </header>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 text-xs sm:text-sm">
+      <div class="card p-5 space-y-4">
+        <div class="flex justify-between items-center"><h2 class="font-bold text-white text-base">Agent 1: Back-Office Chrome Extension</h2><span class="font-mono text-xs text-violet-300">Zero Unapproved Writes</span></div>
+        <div class="p-3.5 rounded-xl bg-amber-950/30 border border-amber-500/40 space-y-2 text-xs">
+          <div class="font-bold text-amber-300">Rate Discrepancy Detected: Villa Mirabello (Crete)</div>
+          <div class="text-slate-300">PMS Master Rate (July 12-15): <strong>€240/night</strong> vs Booking Channel: <strong>€195/night</strong> (-€45 gap).</div>
+          <div class="flex gap-2 pt-1">
+            <button type="button" onclick="approveRateSync()" class="cursor-pointer px-3 py-1.5 rounded-lg bg-emerald-500 text-slate-950 font-semibold">Approve Rate Fix</button>
+            <button type="button" onclick="testGuestMessageRefusal()" class="cursor-pointer px-3 py-1.5 rounded-lg bg-rose-500/20 border border-rose-500/40 text-rose-300 font-semibold">Test: "Message Guest Maria"</button>
+          </div>
+        </div>
+        <div id="bo-log" class="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-slate-300 space-y-1">
+          <div>[Audit Log] Rate mismatch queued. Waiting for recorded human approval...</div>
+        </div>
+      </div>
+
+      <div class="card p-5 space-y-4">
+        <div class="flex justify-between items-center"><h2 class="font-bold text-white text-base">Agent 2: Isolated Website Sales Agent</h2><span id="msg-counter" class="font-mono text-xs text-emerald-400">Free Messages: 0 / 5</span></div>
+        <div id="sales-chat" class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2 h-44 overflow-y-auto text-xs">
+          <div class="text-slate-300">Ask about pricing/channels (grounded KB), test an ungrounded question, or click 6 times to trigger the signup gate!</div>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" onclick="askSales('kb')" class="cursor-pointer px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs">Ask Pricing (In KB)</button>
+          <button type="button" onclick="askSales('unknown')" class="cursor-pointer px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs">Ask Custom Tax Law (Not in KB)</button>
+          <button type="button" onclick="simBilling('Upgrade Pro ->Recorded in Test Billing')" class="cursor-pointer px-3 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-xs">Test Upgrade/Cancel</button>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+  <script>
+  
+    let count = 0;
+    function approveRateSync() {
+      document.getElementById('bo-log').innerHTML += '<div class="text-emerald-400">[APPROVED by Manager] Channel rate updated €195 -> €240. Change ID #904 recorded.</div>';
+    }
+    function testGuestMessageRefusal() {
+      document.getElementById('bo-log').innerHTML += '<div class="text-rose-400">[REFUSED - Criterion #3] Back-office agent is strictly prohibited from messaging guests.</div>';
+    }
+    function askSales(kind) {
+      count++;
+      document.getElementById('msg-counter').textContent = 'Free Messages: ' + Math.min(count, 5) + ' / 5';
+      const box = document.getElementById('sales-chat');
+      if (count >= 6) {
+        box.innerHTML += '<div class="p-2.5 rounded bg-violet-950/60 border border-violet-500 text-violet-200 font-semibold">[Message #6 Gate - Criterion #4/#5] You have used your 5 free answers. Create your free account now to continue and unlock onboarding &amp; test checkout!</div>';
+      } else if (kind === 'kb') {
+        box.innerHTML += '<div class="text-emerald-300">[Grounded KB] Starter plan is €49/mo for up to 5 properties, Growth is €119/mo (Source: Public_Offer_v2).</div>';
+      } else {
+        box.innerHTML += '<div class="text-amber-300">[Hand-off - No Guessing] That tax rule is not in our verified knowledge base. Routing your question to our onboarding team.</div>';
+      }
+      box.scrollTop = box.scrollHeight;
+    }
+    function simBilling(msg) {
+      const box = document.getElementById('sales-chat');
+      box.innerHTML += '<div class="text-sky-300 font-mono">[Billing Sandbox] Registration -> Checkout -> Upgrade &amp; Cancellation verified in test mode.</div>';
+      box.scrollTop = box.scrollHeight;
+    }
+    
+  </script>
+</body>
+</html>

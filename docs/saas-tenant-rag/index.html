@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-Tenant Permission-Aware SaaS AI & Action Workflow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Work Sans', sans-serif; background: #090d16; color: #f1f5f9; font-variant-numeric: tabular-nums; }
+    h1, h2, h3, .font-display { font-family: 'Outfit', sans-serif; }
+    .accent-pill { background: rgba(14,165,233,0.16); color: #7dd3fc; border: 1px solid #0ea5e955; }
+    .accent-btn { background: #0ea5e9; color: #090d16; font-weight: 600; }
+    .accent-btn:hover { filter: brightness(1.08); }
+    .card { background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(51, 65, 85, 0.8); border-radius: 16px; }
+  </style>
+</head>
+<body class="min-h-screen antialiased p-4 sm:p-8">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <header class="card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="space-y-1">
+        <span class="accent-pill inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold">FASTAPI + PGVECTOR RLS + EVALS</span>
+        <h1 class="text-xl sm:text-2xl font-bold text-white">Multi-Tenant Permission-Aware SaaS AI & Action Workflow</h1>
+        <p class="text-xs sm:text-sm text-slate-400">Enforces Pre-Retrieval Tenant + Role Isolation Before Vector Search & Grounded Tool Execution</p>
+      </div>
+      <span class="text-xs font-mono text-slate-400">Interactive Engineering Prototype</span>
+    </header>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 text-xs sm:text-sm">
+      <div class="lg:col-span-5 card p-5 space-y-3">
+        <h2 class="font-bold text-white text-base">1. Switch SaaS Tenant &amp; User Role</h2>
+        <button type="button" onclick="runTenant('t1_admin')" class="cursor-pointer w-full text-left p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-sky-500"><strong>Tenant A · Org Admin</strong><div class="text-xs text-slate-400">Can view Tenant A billing + operational docs</div></button>
+        <button type="button" onclick="runTenant('t1_member')" class="cursor-pointer w-full text-left p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-sky-500"><strong>Tenant A · Standard Member</strong><div class="text-xs text-slate-400">Blocked from billing &amp; executive docs</div></button>
+        <button type="button" onclick="runTenant('t2_admin')" class="cursor-pointer w-full text-left p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-rose-500"><strong>Tenant B · Cross-Tenant Probe</strong><div class="text-xs text-slate-400">Tests strict tenant_id isolation</div></button>
+      </div>
+      <div class="lg:col-span-7 card p-5 space-y-3">
+        <h2 class="font-bold text-white text-base">2. Pre-Filtered Retrieval &amp; Grounded Answer</h2>
+        <div class="text-xs text-slate-400">Query: <em>"Why did Q3 enterprise usage spike and what is our contract renewal cap?"</em></div>
+        <div id="saas-out" class="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs space-y-2"></div>
+      </div>
+    </div>
+    
+  </div>
+  <script>
+  
+    function runTenant(mode) {
+      const box = document.getElementById('saas-out');
+      if (mode === 't1_admin') {
+        box.innerHTML = `<div class="text-emerald-400">SQL RLS Filter: WHERE tenant_id = 'org_A' AND role IN ('admin','member')</div><div class="text-white font-sans">Q3 usage rose 34% after onboarding 3 regional teams [Doc #A-19], and your renewal cap is locked at 5% YoY [Contract #A-02].</div>`;
+      } else if (mode === 't1_member') {
+        box.innerHTML = `<div class="text-amber-300">SQL RLS Filter: WHERE tenant_id = 'org_A' AND role = 'member' (Contract #A-02 excluded pre-search!)</div><div class="text-white font-sans">Q3 usage rose 34% after onboarding 3 regional teams [Doc #A-19]. Renewal cap details require Org Admin permissions.</div>`;
+      } else {
+        box.innerHTML = `<div class="text-rose-400">SQL RLS Filter: WHERE tenant_id = 'org_B' -> 0 chunks from org_A reachable!</div><div class="text-white font-sans">No matching records found in your organization workspace.</div>`;
+      }
+    }
+    runTenant('t1_admin');
+    
+  </script>
+</body>
+</html>

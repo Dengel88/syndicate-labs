@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Production n8n + LLM Tool-Calling & Exception Router</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Work Sans', sans-serif; background: #090d16; color: #f1f5f9; font-variant-numeric: tabular-nums; }
+    h1, h2, h3, .font-display { font-family: 'Outfit', sans-serif; }
+    .accent-pill { background: rgba(245,158,11,0.16); color: #fcd34d; border: 1px solid #f59e0b55; }
+    .accent-btn { background: #f59e0b; color: #090d16; font-weight: 600; }
+    .accent-btn:hover { filter: brightness(1.08); }
+    .card { background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(51, 65, 85, 0.8); border-radius: 16px; }
+  </style>
+</head>
+<body class="min-h-screen antialiased p-4 sm:p-8">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <header class="card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="space-y-1">
+        <span class="accent-pill inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold">N8N + PYTHON + MCP AGENTS</span>
+        <h1 class="text-xl sm:text-2xl font-bold text-white">Production n8n + LLM Tool-Calling & Exception Router</h1>
+        <p class="text-xs sm:text-sm text-slate-400">Combines Deterministic API Routing, Structured Schema Extraction, Human Approval & Dead-Letter Replay</p>
+      </div>
+      <span class="text-xs font-mono text-slate-400">Interactive Engineering Prototype</span>
+    </header>
+    
+    <div class="card p-5 space-y-4 text-xs sm:text-sm">
+      <div class="flex flex-wrap justify-between items-center gap-2">
+        <h2 class="font-bold text-white text-base">Interactive Workflow Execution Trace</h2>
+        <div class="flex gap-2">
+          <button type="button" onclick="simRun('clean')" class="cursor-pointer px-3.5 py-2 rounded-lg accent-btn text-xs">Simulate High-Confidence Ticket</button>
+          <button type="button" onclick="simRun('ambiguous')" class="cursor-pointer px-3.5 py-2 rounded-lg bg-slate-800 text-white text-xs">Simulate Ambiguous Refund (> $500)</button>
+        </div>
+      </div>
+      <div id="trace-box" class="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs space-y-1.5 text-slate-300">
+        Click a scenario above to inspect idempotency keys, JSON schema validation, and human-in-the-loop routing.
+      </div>
+    </div>
+    
+  </div>
+  <script>
+  
+    function simRun(mode) {
+      const box = document.getElementById('trace-box');
+      if (mode === 'clean') {
+        box.innerHTML = `
+          <div class="text-emerald-400">[1] Webhook Intake -> idempotency_key: req_99281a (Not seen before)</div>
+          <div class="text-sky-300">[2] LLM Structured Output (strict JSON schema) -> intent="address_update", confidence=0.96</div>
+          <div class="text-emerald-400">[3] RAG Policy Check -> Allowed before fulfillment. Updated CRM + PostgreSQL audit log!</div>
+        `;
+      } else {
+        box.innerHTML = `
+          <div class="text-emerald-400">[1] Webhook Intake -> idempotency_key: req_99284f</div>
+          <div class="text-amber-300">[2] LLM Extraction -> intent="custom_credit_request", amount=$840 (Exceeds $200 auto-limit)</div>
+          <div class="text-rose-300">[3] GUARDRAIL PAUSE -> Sent interactive Slack/Email Approval Card to Manager. Zero unapproved API writes!</div>
+        `;
+      }
+    }
+    simRun('clean');
+    
+  </script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cognitive Voice Freight Dispatcher - Structured Owner Memory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Work Sans', sans-serif; background: #090d16; color: #f1f5f9; font-variant-numeric: tabular-nums; }
+    h1, h2, h3, .font-display { font-family: 'Outfit', sans-serif; }
+    .accent-pill { background: rgba(14,165,233,0.16); color: #7dd3fc; border: 1px solid #0ea5e955; }
+    .accent-btn { background: #0ea5e9; color: #090d16; font-weight: 600; }
+    .accent-btn:hover { filter: brightness(1.08); }
+    .card { background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(51, 65, 85, 0.8); border-radius: 16px; }
+  </style>
+</head>
+<body class="min-h-screen antialiased p-4 sm:p-8">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <header class="card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="space-y-1">
+        <span class="accent-pill inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold">PHASE 1 VOICE + LONG-TERM MEMORY</span>
+        <h1 class="text-xl sm:text-2xl font-bold text-white">Cognitive Voice Freight Dispatcher - Structured Owner Memory</h1>
+        <p class="text-xs sm:text-sm text-slate-400">Separates General Rules, Seasonal Exceptions, Personal Preferences & Live DAT/Truckstop Load Scoring</p>
+      </div>
+      <span class="text-xs font-mono text-slate-400">Interactive Engineering Prototype</span>
+    </header>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 text-xs sm:text-sm">
+      <div class="lg:col-span-6 card p-5 space-y-4">
+        <h2 class="font-bold text-white text-base">1. Teach via Daily Voice Conversation (Editable Memory)</h2>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" onclick="teachRule('denver')" class="cursor-pointer px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs">🎙 Teach: "Avoid Friday Denver under $3.10/mi"</button>
+          <button type="button" onclick="teachRule('broker')" class="cursor-pointer px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs">🎙 Correction: "Exception for Apex Logistics (+15c)"</button>
+        </div>
+        <div id="memory-list" class="space-y-2.5"></div>
+      </div>
+
+      <div class="lg:col-span-6 card p-5 space-y-4">
+        <h2 class="font-bold text-white text-base">2. How the AI Evaluates Today's Freight Loads Using Your Brain</h2>
+        <div id="loads-box" class="space-y-3"></div>
+      </div>
+    </div>
+    
+  </div>
+  <script>
+  
+    let memories = [
+      { id: 1, type: 'GENERAL RULE', text: 'Max deadhead 85 miles unless reload market score > 75 (Atlanta, Dallas).' },
+      { id: 2, type: 'OWNER PREFERENCE', text: 'Target >= $2.55/all-in mile on 53ft Dry Van Midwest -> Southeast lanes.' }
+    ];
+    let hasDenver = false, hasBroker = false;
+
+    function teachRule(kind) {
+      if (kind === 'denver' && !hasDenver) {
+        hasDenver = true;
+        memories.unshift({ id: 3, type: 'MARKET RULE (LEARNED TODAY)', text: 'Never book Friday delivery into Denver CO under $3.10/mi - outbound reload rates collapse over weekend.' });
+      }
+      if (kind === 'broker' && !hasBroker) {
+        hasBroker = true;
+        memories.unshift({ id: 4, type: 'EXCEPTION (CORRECTION)', text: 'If broker is Apex Freight with detention guarantee in writing, accept $2.95/mi on Denver.' });
+      }
+      renderAll();
+    }
+    function deleteMem(id) {
+      memories = memories.filter(m => m.id !== id);
+      if (id === 3) hasDenver = false;
+      if (id === 4) hasBroker = false;
+      renderAll();
+    }
+    function renderAll() {
+      document.getElementById('memory-list').innerHTML = memories.map(m => `
+        <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-start justify-between gap-2 text-xs">
+          <div><span class="font-mono text-sky-400 font-semibold">[${m.type}]</span><div class="text-slate-200 mt-1">${m.text}</div></div>
+          <button type="button" onclick="deleteMem(${m.id})" class="cursor-pointer text-rose-400 hover:underline shrink-0">Delete</button>
+        </div>
+      `).join('');
+
+      const denverDecision = !hasDenver
+        ? '<span class="text-amber-300">NEEDS INPUT: $2.62/mi looks fair on paper, but ask owner about Denver outbound reload.</span>'
+        : (hasBroker
+            ? '<span class="text-emerald-400">COUNTER AT $2.95/mi: Matches your Apex Freight exception if written detention is included!</span>'
+            : '<span class="text-rose-400">REJECT / COUNTER $3.15/mi: Violates your Friday Denver dead-market rule ($2.62 < $3.10 floor).</span>');
+
+      document.getElementById('loads-box').innerHTML = `
+        <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 text-xs">
+          <div class="flex justify-between font-bold text-white"><span>Load #1: Chicago IL -> Denver CO (Fri Deliv · Apex Freight)</span><span class="font-mono">$2,620 (1,000 mi · $2.62/mi)</span></div>
+          <div>${denverDecision}</div>
+        </div>
+        <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 text-xs">
+          <div class="flex justify-between font-bold text-white"><span>Load #2: Dallas TX -> Atlanta GA (38 mi deadhead)</span><span class="font-mono">$2,180 (805 mi · $2.71/mi)</span></div>
+          <div class="text-emerald-400">RECOMMEND BOOKING: Deadhead 38 mi (<85 limit), $2.71/mi beats $2.55 floor, strong Atlanta reload market.</div>
+        </div>
+      `;
+    }
+    renderAll();
+    
+  </script>
+</body>
+</html>

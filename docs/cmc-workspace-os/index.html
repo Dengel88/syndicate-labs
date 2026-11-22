@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CMC Electric & 3CK Investments - Google Workspace AI Control Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Work Sans', sans-serif; background: #090d16; color: #f1f5f9; font-variant-numeric: tabular-nums; }
+    h1, h2, h3, .font-display { font-family: 'Outfit', sans-serif; }
+    .accent-pill { background: rgba(16,185,129,0.16); color: #6ee7b7; border: 1px solid #10b98155; }
+    .accent-btn { background: #10b981; color: #090d16; font-weight: 600; }
+    .accent-btn:hover { filter: brightness(1.08); }
+    .card { background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(51, 65, 85, 0.8); border-radius: 16px; }
+  </style>
+</head>
+<body class="min-h-screen antialiased p-4 sm:p-8">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <header class="card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="space-y-1">
+        <span class="accent-pill inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold">GOOGLE WORKSPACE + SELF-HOSTED N8N</span>
+        <h1 class="text-xl sm:text-2xl font-bold text-white">CMC Electric & 3CK Investments - Google Workspace AI Control Center</h1>
+        <p class="text-xs sm:text-sm text-slate-400">Paid Pilot Preview: Listing Alert Email -> Deduped Google Sheet + Draft Approval Gate + Non-Silent Failure Alert</p>
+      </div>
+      <span class="text-xs font-mono text-slate-400">Interactive Engineering Prototype</span>
+    </header>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 text-xs sm:text-sm">
+      <div class="lg:col-span-7 card p-5 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h2 class="font-bold text-white text-base">Paid Pilot: Real Estate Email -> Deduped Google Sheet</h2>
+          <div class="flex gap-2">
+            <button type="button" onclick="ingestProperty()" class="cursor-pointer px-3 py-1.5 rounded-lg accent-btn text-xs">Run Listing Email</button>
+            <button type="button" onclick="ingestDuplicate()" class="cursor-pointer px-3 py-1.5 rounded-lg bg-slate-800 text-slate-200 text-xs">Test Duplicate</button>
+            <button type="button" onclick="testFailureAlert()" class="cursor-pointer px-3 py-1.5 rounded-lg bg-rose-600 text-white text-xs">Test Failure Alert</button>
+          </div>
+        </div>
+        <div id="sheet-rows" class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs space-y-1.5">
+          <div class="text-slate-400">Google Sheet: 3CK_Deal_Pipeline (Deduplicated by Normalized Address + MLS/Source Hash)</div>
+          <div class="text-emerald-300">Row 1 | 412 Oak St, Clayton NC | $285,000 | 3bd/2ba | Missing: Roof Age [FLAGGED]</div>
+        </div>
+        <div id="pilot-log" class="p-3 rounded-xl bg-slate-900 border border-slate-800 font-mono text-xs text-slate-300">Heartbeat Watchdog: OK (Last run 2m ago · 0 silent failures)</div>
+      </div>
+
+      <div class="lg:col-span-5 card p-5 space-y-3">
+        <h2 class="font-bold text-white text-base">Owner No-Code Rule Sheet (Edit Without Dev)</h2>
+        <p class="text-xs text-slate-400">All schedules, recipients, and archive thresholds live in a protected "Settings" tab inside your own Google Sheet:</p>
+        <div class="space-y-2 text-xs">
+          <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex justify-between"><span>Daily Briefing Time (US Eastern)</span><strong class="font-mono text-emerald-400">07:15 AM EST</strong></div>
+          <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex justify-between"><span>CMC Electric Outbound Drafts</span><strong class="font-mono text-amber-300">WAIT FOR APPROVAL</strong></div>
+          <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex justify-between"><span>Failure Alert Channel</span><strong class="font-mono text-sky-300">Gmail + SMS Push</strong></div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+  <script>
+  
+    let added = false;
+    function ingestProperty() {
+      if (!added) {
+        added = true;
+        document.getElementById('sheet-rows').innerHTML += '<div class="text-emerald-300">Row 2 | 119 Pine Ave, Raleigh NC | $319,000 | Duplex | Source Link Saved [NEW]</div>';
+        document.getElementById('pilot-log').innerHTML = '<span class="text-emerald-400">[SUCCESS] Parsed listing alert, extracted fields, verified unique hash, appended Row 2.</span>';
+      } else {
+        ingestDuplicate();
+      }
+    }
+    function ingestDuplicate() {
+      document.getElementById('pilot-log').innerHTML = '<span class="text-amber-300">[DEDUP GUARD] 119 Pine Ave already exists in Sheet (hash match). Skipped duplicate row, updated Last_Seen timestamp.</span>';
+    }
+    function testFailureAlert() {
+      document.getElementById('pilot-log').innerHTML = '<span class="text-rose-400">[ALERT DISPATCHED] Simulated Google API 429 error -> Queued 3x exponential retry + sent instant owner alert email with replay link!</span>';
+    }
+    
+  </script>
+</body>
+</html>

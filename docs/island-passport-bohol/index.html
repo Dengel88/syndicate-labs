@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Island Passport - Bohol Conservation Map, Page-Flip & Stamp Motion</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Work Sans', sans-serif; background: #090d16; color: #f1f5f9; font-variant-numeric: tabular-nums; }
+    h1, h2, h3, .font-display { font-family: 'Outfit', sans-serif; }
+    .accent-pill { background: rgba(16,185,129,0.16); color: #6ee7b7; border: 1px solid #10b98155; }
+    .accent-btn { background: #10b981; color: #090d16; font-weight: 600; }
+    .accent-btn:hover { filter: brightness(1.08); }
+    .card { background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(51, 65, 85, 0.8); border-radius: 16px; }
+  </style>
+</head>
+<body class="min-h-screen antialiased p-4 sm:p-8">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <header class="card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="space-y-1">
+        <span class="accent-pill inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold">BOHOL PILOT · MOBILE-FIRST MOTION POC</span>
+        <h1 class="text-xl sm:text-2xl font-bold text-white">Island Passport - Bohol Conservation Map, Page-Flip & Stamp Motion</h1>
+        <p class="text-xs sm:text-sm text-slate-400">Zero-Fee Vector Map Zoom + Tactile Passport Flip + Charity Email Receipt Verification Glow</p>
+      </div>
+      <span class="text-xs font-mono text-slate-400">Interactive Engineering Prototype</span>
+    </header>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 text-xs sm:text-sm">
+      <div class="lg:col-span-6 card p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="font-bold text-white text-base">1. Bohol Interactive Sanctuary Map (No Mapbox Fees)</h2>
+          <span class="font-mono text-xs text-emerald-400">Protomaps + MapLibre Style</span>
+        </div>
+        <div id="map-stage" class="relative h-64 rounded-2xl bg-gradient-to-br from-sky-950 via-teal-950 to-emerald-950 border border-teal-700/50 overflow-hidden p-5 flex flex-col justify-between transition-all duration-500">
+          <div class="flex justify-between text-xs font-mono text-teal-200"><span>PHILIPPINES · BOHOL ARCHIPELAGO</span><span id="zoom-lbl">Zoom: 9.2x</span></div>
+          <div class="flex flex-wrap gap-2 my-auto justify-center">
+            <button type="button" onclick="selectZone('Tarsier Forest Sanctuary', 'Corella Hills', '$15 Direct Charity Gift')" class="cursor-pointer px-3.5 py-2 rounded-full bg-emerald-500/25 border border-emerald-400 text-white font-semibold hover:scale-105 transition">📍 Tarsier Sanctuary</button>
+            <button type="button" onclick="selectZone('Panglao Coral Guard', 'Balicasag Reef', '$20 Reef Mooring Buoy')" class="cursor-pointer px-3.5 py-2 rounded-full bg-sky-500/25 border border-sky-400 text-white font-semibold hover:scale-105 transition">📍 Panglao Reef Guard</button>
+            <button type="button" onclick="selectZone('Chocolate Hills Reforest', 'Carmen Ridge', '$10 Native Seedling Pack')" class="cursor-pointer px-3.5 py-2 rounded-full bg-amber-500/25 border border-amber-400 text-white font-semibold hover:scale-105 transition">📍 Carmen Reforest</button>
+          </div>
+          <div id="zone-caption" class="text-xs text-teal-100 bg-black/40 px-3 py-1.5 rounded-lg">Tap an island sanctuary pin to fly-to and open your passport page.</div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-6 card p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="font-bold text-white text-base">2. Interactive Passport Flip &amp; Stamp Slam</h2>
+          <div class="flex gap-2">
+            <button type="button" onclick="earnStamp()" class="cursor-pointer px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-semibold text-xs">1. Earn Stamp</button>
+            <button type="button" onclick="verifyReceipt()" class="cursor-pointer px-3 py-1.5 rounded-lg bg-emerald-500 text-slate-950 font-semibold text-xs">2. Verify Receipt Glow</button>
+          </div>
+        </div>
+        <div id="passport-book" class="h-64 rounded-2xl bg-[#f6f1e7] text-stone-900 p-5 border-4 border-[#d5c7ad] shadow-inner flex flex-col justify-between relative overflow-hidden transition-transform duration-300">
+          <div class="flex justify-between text-[11px] font-mono uppercase tracking-widest text-stone-500 border-b border-stone-300 pb-2">
+            <span>PASSPORT · BOHOL #01</span><span id="page-num">PAGE 01 / 03</span>
+          </div>
+          <div class="my-auto flex items-center justify-around">
+            <div class="space-y-1">
+              <div id="stamp-zone-title" class="font-bold text-lg">Tarsier Forest Sanctuary</div>
+              <div id="stamp-state" class="text-xs text-stone-600">Status: Discovery (Unstamped)</div>
+            </div>
+            <div id="ink-stamp" class="w-28 h-28 rounded-full border-4 border-dashed border-stone-400 flex flex-col items-center justify-center text-center p-2 font-mono text-xs text-stone-400 transition-all duration-300 scale-125 opacity-40">
+              <span>AWAITING</span><span>STAMP</span>
+            </div>
+          </div>
+          <div class="flex justify-between items-center text-[11px] text-stone-500 border-t border-stone-300 pt-2">
+            <span>100% Direct-to-Charity · Postmark Inbound</span>
+            <button type="button" onclick="flipNext()" class="cursor-pointer font-semibold text-emerald-800 hover:underline">Flip Page →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+  <script>
+  
+    let page = 1;
+    function selectZone(name, sub, gift) {
+      document.getElementById('zoom-lbl').textContent = 'Fly-to Zoom: 13.4x';
+      document.getElementById('zone-caption').textContent = name + ' (' + sub + ') - Suggested direct gift: ' + gift;
+      document.getElementById('stamp-zone-title').textContent = name;
+      resetStampVisual();
+    }
+    function resetStampVisual() {
+      const s = document.getElementById('ink-stamp');
+      s.className = 'w-28 h-28 rounded-full border-4 border-dashed border-stone-400 flex flex-col items-center justify-center text-center p-2 font-mono text-xs text-stone-400 transition-all duration-300 scale-110 opacity-40';
+      s.innerHTML = '<span>AWAITING</span><span>STAMP</span>';
+      document.getElementById('stamp-state').textContent = 'Status: Discovery (Unstamped)';
+    }
+    function earnStamp() {
+      const s = document.getElementById('ink-stamp');
+      s.className = 'w-28 h-28 rounded-full border-4 border-amber-700 bg-amber-500/15 flex flex-col items-center justify-center text-center p-2 font-mono text-xs font-bold text-amber-900 transition-all duration-300 scale-100 -rotate-12 opacity-100';
+      s.innerHTML = '<span>DONATION</span><span>PENDING</span>';
+      document.getElementById('stamp-state').textContent = 'Status: Stamped! Waiting for forwarded charity receipt...';
+    }
+    function verifyReceipt() {
+      const s = document.getElementById('ink-stamp');
+      s.className = 'w-28 h-28 rounded-full border-4 border-emerald-600 bg-emerald-500/20 flex flex-col items-center justify-center text-center p-2 font-mono text-xs font-bold text-emerald-900 transition-all duration-500 scale-105 -rotate-6 shadow-[0_0_28px_rgba(16,185,129,0.75)]';
+      s.innerHTML = '<span>VERIFIED</span><span>SUPPORTER</span>';
+      document.getElementById('stamp-state').textContent = 'Verified via Inbound Charity Receipt! Story Share Card Ready.';
+    }
+    function flipNext() {
+      page = page === 3 ? 1 : page + 1;
+      const zones = ['Tarsier Forest Sanctuary', 'Panglao Coral Guard', 'Chocolate Hills Reforest'];
+      document.getElementById('page-num').textContent = 'PAGE 0' + page + ' / 03';
+      const book = document.getElementById('passport-book');
+      book.style.transform = 'rotateY(14deg)';
+      setTimeout(() => { book.style.transform = 'rotateY(0deg)'; selectZone(zones[page - 1], 'Bohol', '$15'); }, 180);
+    }
+    
+  </script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trailhead Outdoor Gear - n8n + Claude First-Line Support Triage</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Work Sans', sans-serif; background: #090d16; color: #f1f5f9; font-variant-numeric: tabular-nums; }
+    h1, h2, h3, .font-display { font-family: 'Outfit', sans-serif; }
+    .accent-pill { background: rgba(16,185,129,0.16); color: #6ee7b7; border: 1px solid #10b98155; }
+    .accent-btn { background: #10b981; color: #090d16; font-weight: 600; }
+    .accent-btn:hover { filter: brightness(1.08); }
+    .card { background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(51, 65, 85, 0.8); border-radius: 16px; }
+  </style>
+</head>
+<body class="min-h-screen antialiased p-4 sm:p-8">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <header class="card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="space-y-1">
+        <span class="accent-pill inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold">N8N + CLAUDE + SHOPIFY + SHIPSTATION</span>
+        <h1 class="text-xl sm:text-2xl font-bold text-white">Trailhead Outdoor Gear - n8n + Claude First-Line Support Triage</h1>
+        <p class="text-xs sm:text-sm text-slate-400">Gmail Monitor -> Intent & Risk Router -> Shopify + ShipStation Live Lookup -> Auto-Reply vs Slack Escalation</p>
+      </div>
+      <span class="text-xs font-mono text-slate-400">Interactive Engineering Prototype</span>
+    </header>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 text-xs">
+      <div class="lg:col-span-5 card p-4 space-y-2.5">
+        <h2 class="font-bold text-white text-sm">Test Incoming Outdoor-Gear Customer Emails</h2>
+        <button type="button" onclick="triage(0)" class="cursor-pointer w-full text-left p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-emerald-500"><strong>1. Order Status (Low Risk)</strong><div class="text-slate-400">"Where is my Ridge 2P Tent order #4829?"</div></button>
+        <button type="button" onclick="triage(1)" class="cursor-pointer w-full text-left p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-amber-500"><strong>2. Sizing Policy (Grounded KB)</strong><div class="text-slate-400">"Do Alpine Hardshell jackets run true to size over fleece?"</div></button>
+        <button type="button" onclick="triage(2)" class="cursor-pointer w-full text-left p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-rose-500"><strong>3. Damaged Gear Complaint (Escalate!)</strong><div class="text-slate-400">"Stove valve leaked on our backcountry trip, furious!"</div></button>
+      </div>
+      <div class="lg:col-span-7 card p-4 space-y-2.5">
+        <h2 class="font-bold text-white text-sm">n8n + Claude Guardrail Decision &amp; Audit Row</h2>
+        <div id="triage-out" class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[11px] space-y-1.5 text-slate-200"></div>
+      </div>
+    </div>
+    
+  </div>
+  <script>
+  
+    function triage(i) {
+      const cases = [
+        '<div class="text-emerald-400">[AUTO-SENT · Confidence 0.98]</div><div>Shopify #4829 + ShipStation UPS 1Z998... -> In transit, arrives Thursday. Grounded reply sent + logged to Audit Sheet!</div>',
+        '<div class="text-sky-300">[AUTO-SENT · KB Citation: Sizing_Guide_v4]</div><div>Quoted exact chest/layering chart from Help Center (zero unverified claims) + 30-day free exchange policy link.</div>',
+        '<div class="text-rose-400">[AUTO-SEND BLOCKED · ESCALATED TO SLACK #support-urgent]</div><div>Category: Safety/Complaint. Drafted summary + order history for human agent; logged escalation in Audit Sheet.</div>'
+      ];
+      document.getElementById('triage-out').innerHTML = cases[i];
+    }
+    triage(0);
+    
+  </script>
+</body>
+</html>
