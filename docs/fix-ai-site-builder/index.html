@@ -49,22 +49,18 @@
     const EDITS = [
       {
         before: "ERROR 422: Output blocked by strict allowlist validator (external link 'calendly.com' not in static preset). User sees dead-end error toast.",
-        after: "1. Claude calls patchSection({ id: 'hero', bg: 'slate-950', cta: { label: 'Get WhatsApp Quote', href: 'https://wa.me/...' } })
-2. External URL sanitizer wraps Calendly in safe iframe/link block instead of refusing.
-3. Cost: 1,150 tokens (vs 9,400 full-page regen) · 0 dead-end errors."
+        after: "1. Claude calls patchSection({ id: 'hero', bg: 'slate-950', cta: { label: 'Get WhatsApp Quote', href: 'https://wa.me/...' } })\n2. External URL sanitizer wraps Calendly in safe iframe/link block instead of refusing.\n3. Cost: 1,150 tokens (vs 9,400 full-page regen) · 0 dead-end errors."
       },
       {
         before: "ERROR 500: JSX parse failure on unclosed <span> -> generation aborted, user loses prompt.",
-        after: "1. Scoped edit targets only PricingSection.tsx.
-2. AST validator catches unclosed <span> -> runs fast syntax-repair pass automatically -> commits valid TSX + returns preview."
+        after: "1. Scoped edit targets only PricingSection.tsx.\n2. AST validator catches unclosed <span> -> runs fast syntax-repair pass automatically -> commits valid TSX + returns preview."
       }
     ];
     function runEdit(i) {
       const e = EDITS[i];
       document.getElementById('compare-out').innerHTML = `
         <div class="p-3.5 rounded-xl bg-rose-950/30 border border-rose-500/40 text-xs text-rose-200"><strong>Old Pipeline:</strong><br/>${e.before}</div>
-        <div class="p-3.5 rounded-xl bg-emerald-950/30 border border-emerald-500/40 text-xs text-emerald-200 whitespace-pre-line"><strong>Repaired Tool-Calling Pipeline:</strong>
-${e.after}</div>
+        <div class="p-3.5 rounded-xl bg-emerald-950/30 border border-emerald-500/40 text-xs text-emerald-200 whitespace-pre-line"><strong>Repaired Tool-Calling Pipeline:</strong>\n${e.after}</div>
       `;
     }
     runEdit(0);
