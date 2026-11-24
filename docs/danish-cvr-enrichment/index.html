@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Danish CVR Lead Enrichment & Concurrent-Safe Credit Wallet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Work Sans', sans-serif; background: #090d16; color: #f1f5f9; font-variant-numeric: tabular-nums; }
+    h1, h2, h3, .font-display { font-family: 'Outfit', sans-serif; }
+    .accent-pill { background: rgba(14,165,233,0.15); color: #7dd3fc; border: 1px solid #0ea5e955; }
+    .accent-btn { background: #0ea5e9; color: #090d16; font-weight: 600; }
+    .accent-btn:hover { filter: brightness(1.08); }
+    .card { background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(51, 65, 85, 0.8); border-radius: 16px; }
+  </style>
+</head>
+<body class="min-h-screen antialiased p-4 sm:p-8">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <header class="card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="space-y-1">
+        <span class="accent-pill inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold">SAAS CORE WORKFLOW · NEON + TRIGGER.DEV + STRIPE</span>
+        <h1 class="text-xl sm:text-2xl font-bold text-white">Danish CVR Lead Enrichment & Concurrent-Safe Credit Wallet</h1>
+        <p class="text-xs sm:text-sm text-slate-400">15K Contact Tiering (10K Free / 5K Paid) + Waterfall API Reveal + Atomic PostgreSQL Credit Reservation (Never < 0)</p>
+      </div>
+      <span class="text-xs font-mono text-slate-400">Interactive Architecture Testbed</span>
+    </header>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 text-xs sm:text-sm">
+      <div class="lg:col-span-7 card p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="font-bold text-white text-base">1. Danish CVR Directory &amp; Waterfall Reveal</h2>
+          <span class="font-mono text-xs text-sky-300">Prepaid Credits: <strong id="wallet-bal" class="text-base text-white">3</strong></span>
+        </div>
+        <div id="dk-rows" class="space-y-2"></div>
+        <div class="flex gap-2">
+          <button type="button" onclick="burstTest()" class="cursor-pointer flex-1 py-2.5 rounded-xl accent-btn text-xs">Fire 10 Concurrent Reveal Requests (With Only 3 Credits Left!)</button>
+          <button type="button" onclick="resetWallet()" class="cursor-pointer px-4 py-2.5 rounded-xl bg-slate-800 text-xs text-white">Reset to 3 Credits</button>
+        </div>
+      </div>
+      <div class="lg:col-span-5 card p-5 space-y-3">
+        <h2 class="font-bold text-white text-base">2. Atomic Credit Ledger &amp; GDPR Hash Log</h2>
+        <pre id="ledger-log" class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-emerald-300 whitespace-pre-wrap h-64 overflow-y-auto"></pre>
+      </div>
+    </div>
+    
+  </div>
+  <script>
+  
+    let credits = 3;
+    const LEADS = [
+      { cvr: "CVR 39184420", company: "Nordic Hafen Logistics ApS (København)", role: "Head of Operations", tier: "FREE_10K", revealed: "m.lind@nordichafen.dk (In-DB · 0 cr)" },
+      { cvr: "CVR 41028819", company: "Aarhus CleanTech A/S", role: "VP Sales", tier: "PRO_WATERFALL", revealed: null },
+      { cvr: "CVR 37651104", company: "Odense Robotics Fleet ApS", role: "CEO", tier: "PRO_WATERFALL", revealed: null }
+    ];
+    function renderLeads() {
+      document.getElementById('wallet-bal').textContent = String(credits);
+      document.getElementById('dk-rows').innerHTML = LEADS.map((l, i) => `
+        <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 flex flex-wrap justify-between items-center gap-2">
+          <div><div class="font-bold text-white text-xs">${l.company} · <span class="text-sky-300 font-mono">${l.cvr}</span></div><div class="text-[11px] text-slate-400">${l.role} · Tier: ${l.tier}</div></div>
+          ${l.revealed ? `<span class="font-mono text-xs text-emerald-400">${l.revealed}</span>` : `<button type="button" onclick="revealOne(${i})" class="cursor-pointer px-3 py-1.5 rounded-lg bg-sky-500/20 border border-sky-500/40 text-sky-200 text-xs">Reveal (1 Credit)</button>`}
+        </div>
+      `).join('');
+    }
+    function revealOne(i) {
+      if (credits < 1) {
+        document.getElementById('ledger-log').textContent = `[BLOCKED] balance=0 -> HTTP 402 Insufficient Prepaid Credits (never negative).
+` + document.getElementById('ledger-log').textContent;
+        return;
+      }
+      credits -= 1;
+      LEADS[i].revealed = "soren.k@company.dk (Prospeo -> Verified)";
+      document.getElementById('ledger-log').textContent = `[HOLD -> COMMIT] UPDATE wallets SET balance = balance - 1 WHERE org_id=$1 AND balance >= 1
+Upstash Key: rl:sha256:9f82c1... (Zero raw email stored)
+` + document.getElementById('ledger-log').textContent;
+      renderLeads();
+    }
+    function burstTest() {
+      let accepted = 0, rejected = 0;
+      for (let req = 1; req <= 10; req++) {
+        if (credits >= 1) { credits -= 1; accepted++; } else { rejected++; }
+      }
+      renderLeads();
+      document.getElementById('ledger-log').textContent = `[10 PARALLEL REQUESTS ARRIVED]
+Postgres atomic reservation: ${accepted} succeeded, ${rejected} rejected cleanly.
+Final Wallet Balance: ${credits} (Guaranteed >= 0, failed API lookups auto-refunded via idempotency key).
+
+` + document.getElementById('ledger-log').textContent;
+    }
+    function resetWallet() { credits = 3; LEADS[1].revealed = null; LEADS[2].revealed = null; document.getElementById('ledger-log').textContent = 'Wallet reset to 3 prepaid credits.'; renderLeads(); }
+    resetWallet();
+    
+  </script>
+</body>
+</html>

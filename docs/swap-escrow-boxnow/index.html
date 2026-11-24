@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Greece P2P Swap MVP - Stripe Connect Holds + Box Now Sandbox + Supabase RLS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Work Sans', sans-serif; background: #090d16; color: #f1f5f9; font-variant-numeric: tabular-nums; }
+    h1, h2, h3, .font-display { font-family: 'Outfit', sans-serif; }
+    .accent-pill { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid #10b98155; }
+    .accent-btn { background: #10b981; color: #090d16; font-weight: 600; }
+    .accent-btn:hover { filter: brightness(1.08); }
+    .card { background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(51, 65, 85, 0.8); border-radius: 16px; }
+  </style>
+</head>
+<body class="min-h-screen antialiased p-4 sm:p-8">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <header class="card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="space-y-1">
+        <span class="accent-pill inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold">SANDBOX BACKEND INTEGRATION · NEXT.JS + SUPABASE</span>
+        <h1 class="text-xl sm:text-2xl font-bold text-white">Greece P2P Swap MVP - Stripe Connect Holds + Box Now Sandbox + Supabase RLS</h1>
+        <p class="text-xs sm:text-sm text-slate-400">Manual-Capture Collateral Authorization + Box Now Locker Voucher & Webhook Sync + Row-Level Security Lockdown</p>
+      </div>
+      <span class="text-xs font-mono text-slate-400">Interactive Architecture Testbed</span>
+    </header>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 text-xs sm:text-sm">
+      <div class="lg:col-span-5 card p-5 space-y-3">
+        <h2 class="font-bold text-white text-base">1. Step Through Cash-Plus-Item Swap (#TR-704)</h2>
+        <button type="button" onclick="stepSwap(1)" class="cursor-pointer w-full text-left p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-emerald-500/50 text-xs">Step 1: Create Stripe PaymentIntent (capture_method: 'manual' Hold)</button>
+        <button type="button" onclick="stepSwap(2)" class="cursor-pointer w-full text-left p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-emerald-500/50 text-xs">Step 2: Generate Box Now Sandbox Locker Voucher (Athens -> Thessaloniki)</button>
+        <button type="button" onclick="stepSwap(3)" class="cursor-pointer w-full text-left p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-emerald-500/50 text-xs">Step 3: Box Now Webhook 'parcel.delivered' -> Capture Stripe Hold</button>
+        <button type="button" onclick="stepSwap(4)" class="cursor-pointer w-full text-left p-3 rounded-xl bg-rose-950/30 border border-rose-500/40 text-rose-200 text-xs">Security Check: Unauthorized User Tries Mutating Trade Status (RLS Test)</button>
+      </div>
+      <div class="lg:col-span-7 card p-5 space-y-3">
+        <h2 class="font-bold text-white text-base">2. Live Sandbox Payload &amp; Supabase State</h2>
+        <pre id="swap-log" class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-emerald-300 overflow-x-auto whitespace-pre-wrap"></pre>
+      </div>
+    </div>
+    
+  </div>
+  <script>
+  
+    const STEPS = {
+      1: `// Stripe Test Mode - Collateral + EUR 45 Cash-Plus Difference Hold
+stripe.paymentIntents.create({
+  amount: 9500, currency: "eur",
+  capture_method: "manual",
+  transfer_group: "trade_704",
+  metadata: { trade_id: "704", role: "buyer_collateral_and_diff" }
+});
+// Webhook payment_intent.amount_capturable_updated -> Supabase trades.status = 'ESCROW_HELD'`,
+      2: `// Box Now Sandbox REST API -> POST /api/v1/delivery-requests
+{
+  "orderNumber": "SWAP-704-A",
+  "originLocationId": "1042 (Athens Syntagma Locker)",
+  "destinationLocationId": "2219 (Thessaloniki Port Locker)",
+  "voucherPdfUrl": "https://sandbox-api.boxnow.gr/vouchers/BN-994812.pdf",
+  "parcelStatus": "AWAITING_DROP_OFF"
+}`,
+      3: `// Box Now Webhook -> POST /api/webhooks/boxnow (HMAC Verified)
+Event: "parcel.delivered" (tracking: BN-994812)
+-> Server Action calls stripe.paymentIntents.capture("pi_test_8841")
+-> Supabase trades.status updated to 'COMPLETED_RELEASED' via service_role webhook worker.`,
+      4: `-- Supabase RLS Policy Enforcement Test (uid = user_random_99)
+UPDATE public.trades SET status = 'COMPLETED_RELEASED' WHERE id = '704';
+-- BLOCKED (0 rows affected): RLS policy requires auth.uid() IN (initiator_id, counterparty_id) AND state-transition columns locked to verified Server Actions.`
+    };
+    function stepSwap(n) { document.getElementById('swap-log').textContent = STEPS[n]; }
+    stepSwap(1);
+    
+  </script>
+</body>
+</html>

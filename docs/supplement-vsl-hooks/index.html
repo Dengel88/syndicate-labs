@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supplement VSL & Paid-Social Hook Lab (Veo 3 + Higgsfield)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Work Sans', sans-serif; background: #090d16; color: #f1f5f9; font-variant-numeric: tabular-nums; }
+    h1, h2, h3, .font-display { font-family: 'Outfit', sans-serif; }
+    .accent-pill { background: rgba(245,158,11,0.15); color: #fcd34d; border: 1px solid #f59e0b55; }
+    .accent-btn { background: #f59e0b; color: #090d16; font-weight: 600; }
+    .accent-btn:hover { filter: brightness(1.08); }
+    .card { background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(51, 65, 85, 0.8); border-radius: 16px; }
+  </style>
+</head>
+<body class="min-h-screen antialiased p-4 sm:p-8">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <header class="card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="space-y-1">
+        <span class="accent-pill inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold">DIRECT-RESPONSE VIDEO · VEO 3 + HIGGSFIELD</span>
+        <h1 class="text-xl sm:text-2xl font-bold text-white">Supplement VSL & Paid-Social Hook Lab (Veo 3 + Higgsfield)</h1>
+        <p class="text-xs sm:text-sm text-slate-400">0-3s Thumbstop Hook Matrix + Veo 3 / Higgsfield Shot Continuity + Direct-Response Pacing Timeline</p>
+      </div>
+      <span class="text-xs font-mono text-slate-400">Interactive Architecture Testbed</span>
+    </header>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 text-xs sm:text-sm">
+      <div class="lg:col-span-5 card p-5 space-y-3">
+        <h2 class="font-bold text-white text-base">1. Split-Test 3 Opening Hooks (Same Core Script)</h2>
+        <button type="button" onclick="pickHook(0)" class="cursor-pointer w-full text-left p-3 rounded-xl bg-slate-950 border border-amber-500/50 hover:bg-slate-900">
+          <div class="font-bold text-amber-300">Hook A (0-3s): Macro Gut-Barrier Visual Metaphor</div>
+          <div class="text-xs text-slate-400">Higgsfield macro camera push-in + crisp SFX sub-drop under 3kHz</div>
+        </button>
+        <button type="button" onclick="pickHook(1)" class="cursor-pointer w-full text-left p-3 rounded-xl bg-slate-950 border border-slate-800 hover:bg-slate-900">
+          <div class="font-bold text-white">Hook B (0-3s): 3 PM Crash POV Split-Screen</div>
+          <div class="text-xs text-slate-400">Veo 3 photorealistic kitchen counter + native lip-sync pattern interrupt</div>
+        </button>
+        <button type="button" onclick="pickHook(2)" class="cursor-pointer w-full text-left p-3 rounded-xl bg-slate-950 border border-slate-800 hover:bg-slate-900">
+          <div class="font-bold text-white">Hook C (0-3s): "Stop Taking Oxide" Label Callout</div>
+          <div class="text-xs text-slate-400">Extreme close-up supplement facts tear-away -> bioavailable chelate reveal</div>
+        </button>
+        <div class="pt-2 space-y-1.5 text-xs">
+          <div class="text-slate-400 font-semibold">Shipped AI Video Productions (In-House Studio):</div>
+          <a href="https://youtube.com/shorts/6Wskyl8qr1g" target="_blank" class="block text-amber-300 underline">9:16 Vertical AI Cinematic Cut (YouTube Shorts) ↗</a>
+          <a href="https://youtu.be/YL1P0Tub5mk" target="_blank" class="block text-amber-300 underline">Long-Form Consistent Character Series (YouTube) ↗</a>
+        </div>
+      </div>
+      <div class="lg:col-span-7 card p-5 space-y-4">
+        <h2 class="font-bold text-white text-base">2. VSL Beat Sheet &amp; Generation Spec (-14 LUFS Social Master)</h2>
+        <div id="hook-spec" class="space-y-2.5"></div>
+      </div>
+    </div>
+    
+  </div>
+  <script>
+  
+    const HOOKS = [
+      { name: "Hook A: Macro Absorption Reveal", prompt: "Higgsfield Dolly-In · 9:16 · Golden soft-gel dissolving in backlit crystal liquid, zero plastic skin artifacts, 24fps", beats: ["0.0-2.8s: Visual pattern interrupt + bold 4-word kinetic caption", "2.8-11.0s: Agitate why 80% of standard capsules pass unabsorbed (B-roll cut every 2.2s)", "11.0-24.0s: Mechanism reveal + consistent bottle hero lock (reference-frame anchored)", "24.0-35.0s: Social proof stack + risk-reversal offer CTA"] },
+      { name: "Hook B: 3 PM Brain-Fog Pattern Interrupt", prompt: "Veo 3 · Natural morning kitchen window light, handheld micro-shake, authentic UGC actor tossing 3rd coffee cup", beats: ["0.0-2.5s: Dialogue cold-open ('Your 3 PM crash is not caffeine deficiency')", "2.5-10.5s: Split-screen cellular energy animation vs sluggish afternoon desk shot", "10.5-23.0s: 2-scoop morning ritual demo with locked label typography", "23.0-34.0s: 30-day guarantee + bundle CTA overlay"] },
+      { name: "Hook C: Supplement Label Myth-Bust", prompt: "Higgsfield + After Effects label lock · Sharp studio rim light, hand circling generic filler ingredient in red marker", beats: ["0.0-3.0s: Red marker circle on 'Magnesium Oxide 4%' - instant curiosity gap", "3.0-12.0s: Side-by-side solubility visual proof", "12.0-25.0s: Doctor/formulator voiceover + clean clinical chart callout", "25.0-35.0s: First-order discount hook"] }
+    ];
+    function pickHook(i) {
+      const h = HOOKS[i];
+      document.getElementById('hook-spec').innerHTML = `
+        <div class="p-3.5 rounded-xl bg-slate-950 border border-amber-500/40">
+          <div class="text-xs font-mono text-amber-300">${h.name}</div>
+          <div class="text-xs text-slate-300 mt-1 font-mono">${h.prompt}</div>
+        </div>
+        <div class="space-y-2">${h.beats.map(b => `<div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white">${b}</div>`).join('')}</div>
+      `;
+    }
+    pickHook(0);
+    
+  </script>
+</body>
+</html>

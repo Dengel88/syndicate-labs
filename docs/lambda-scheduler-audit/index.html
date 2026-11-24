@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Python + AWS Lambda Social Scheduler - Fragility & Idempotency Audit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Work Sans', sans-serif; background: #090d16; color: #f1f5f9; font-variant-numeric: tabular-nums; }
+    h1, h2, h3, .font-display { font-family: 'Outfit', sans-serif; }
+    .accent-pill { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid #10b98155; }
+    .accent-btn { background: #10b981; color: #090d16; font-weight: 600; }
+    .accent-btn:hover { filter: brightness(1.08); }
+    .card { background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(51, 65, 85, 0.8); border-radius: 16px; }
+  </style>
+</head>
+<body class="min-h-screen antialiased p-4 sm:p-8">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <header class="card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="space-y-1">
+        <span class="accent-pill inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold">READ-ONLY SENIOR CODE AUDIT · PYTHON + LAMBDA</span>
+        <h1 class="text-xl sm:text-2xl font-bold text-white">Python + AWS Lambda Social Scheduler - Fragility & Idempotency Audit</h1>
+        <p class="text-xs sm:text-sm text-slate-400">Interactive Preview of Deliverable: Area Scorecard + Concurrent Retry Duplicate-Post Simulator + Top-10 Remediation Plan</p>
+      </div>
+      <span class="text-xs font-mono text-slate-400">Interactive Architecture Testbed</span>
+    </header>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 text-xs sm:text-sm">
+      <div class="lg:col-span-5 card p-5 space-y-4">
+        <h2 class="font-bold text-white text-base">1. Simulate EventBridge Timeout / Retry Race</h2>
+        <p class="text-xs text-slate-400">Typical failure mode in AI-generated JSON-queue Lambda schedulers: social API succeeds in 14s, Lambda times out before updating JSON, retry posts a duplicate.</p>
+        <div class="flex gap-2">
+          <button type="button" onclick="simLambda(false)" class="cursor-pointer flex-1 py-2.5 rounded-xl bg-rose-500/20 border border-rose-500/50 text-rose-200 font-semibold text-xs">Run Fragile JSON Queue</button>
+          <button type="button" onclick="simLambda(true)" class="cursor-pointer flex-1 py-2.5 rounded-xl accent-btn text-xs">Run Idempotent Lease Lock</button>
+        </div>
+        <pre id="race-out" class="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-slate-200 whitespace-pre-wrap"></pre>
+      </div>
+      <div class="lg:col-span-7 card p-5 space-y-3">
+        <h2 class="font-bold text-white text-base">2. Sample Graded Audit Deliverable Structure</h2>
+        <div class="grid grid-cols-5 gap-2 text-center font-mono text-xs">
+          <div class="p-2 rounded-lg bg-slate-950 border border-rose-500/40"><div class="text-slate-400 text-[10px]">Idempotency</div><div class="text-rose-400 font-bold">D (Critical)</div></div>
+          <div class="p-2 rounded-lg bg-slate-950 border border-amber-500/40"><div class="text-slate-400 text-[10px]">Retries</div><div class="text-amber-300 font-bold">C-</div></div>
+          <div class="p-2 rounded-lg bg-slate-950 border border-amber-500/40"><div class="text-slate-400 text-[10px]">Secrets</div><div class="text-amber-300 font-bold">C</div></div>
+          <div class="p-2 rounded-lg bg-slate-950 border border-rose-500/40"><div class="text-slate-400 text-[10px]">Tests</div><div class="text-rose-400 font-bold">D+</div></div>
+          <div class="p-2 rounded-lg bg-slate-950 border border-slate-700"><div class="text-slate-400 text-[10px]">Structure</div><div class="text-sky-300 font-bold">B-</div></div>
+        </div>
+        <div class="space-y-2 text-xs">
+          <div class="p-3 rounded-xl bg-slate-950 border border-slate-800"><strong class="text-rose-300">#1 Non-atomic S3/disk JSON queue read-modify-write (Est. fix: 4 hrs):</strong> Two overlapping cron invocations read `status="pending"` simultaneously -> replace with atomic claim token + platform idempotency key.</div>
+          <div class="p-3 rounded-xl bg-slate-950 border border-slate-800"><strong class="text-amber-300">#2 Blind `except Exception:` retry on HTTP 200 partial response (Est. fix: 3 hrs):</strong> Persist `remote_post_id` immediately before media metadata tagging so post-publish steps never re-trigger publish.</div>
+          <div class="p-3 rounded-xl bg-slate-950 border border-slate-800"><strong class="text-sky-300">#3 Long-lived OAuth tokens in GitHub Actions env / JSON (Est. fix: 2.5 hrs):</strong> Move refresh tokens to AWS SSM Parameter Store / Secrets Manager with KMS rotation check.</div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+  <script>
+  
+    function simLambda(safe) {
+      document.getElementById('race-out').textContent = safe
+        ? `[Worker A] Claimed post_992 via atomic lock (lease=60s, state=IN_FLIGHT)
+[Worker B - Retry] ConditionalCheckFailedException -> skipped cleanly!
+[Worker A] Published remote_id=ig_17992 -> state=PUBLISHED
+RESULT: 1 post published, 0 duplicates.`
+        : `[Worker A] Read queue.json -> post_992 is "pending"
+[Worker A] POST /publish succeeded -> Lambda timed out before writing queue.json!
+[EventBridge Retry] Read stale queue.json -> post_992 still "pending"
+[EventBridge Retry] POST /publish fired AGAIN!
+RESULT: DUPLICATE LIVE SOCIAL POST.`;
+    }
+    simLambda(false);
+    
+  </script>
+</body>
+</html>

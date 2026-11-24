@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KICKROAST (KRO) - Hinglish Laugh Score, Safety & Feed API</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Work Sans', sans-serif; background: #090d16; color: #f1f5f9; font-variant-numeric: tabular-nums; }
+    h1, h2, h3, .font-display { font-family: 'Outfit', sans-serif; }
+    .accent-pill { background: rgba(245,158,11,0.15); color: #fcd34d; border: 1px solid #f59e0b55; }
+    .accent-btn { background: #f59e0b; color: #090d16; font-weight: 600; }
+    .accent-btn:hover { filter: brightness(1.08); }
+    .card { background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(51, 65, 85, 0.8); border-radius: 16px; }
+  </style>
+</head>
+<body class="min-h-screen antialiased p-4 sm:p-8">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <header class="card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="space-y-1">
+        <span class="accent-pill inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold">PHASE 1 API PROTOTYPE · NODE.JS + PYTHON</span>
+        <h1 class="text-xl sm:text-2xl font-bold text-white">KICKROAST (KRO) - Hinglish Laugh Score, Safety & Feed API</h1>
+        <p class="text-xs sm:text-sm text-slate-400">Audio Laughter Detection + Hinglish Comeback vs Insult Classifier + Banned-Topic Gate + Phase 1 Feed Ranker</p>
+      </div>
+      <span class="text-xs font-mono text-slate-400">Interactive Architecture Testbed</span>
+    </header>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 text-xs sm:text-sm">
+      <div class="lg:col-span-5 card p-5 space-y-4">
+        <h2 class="font-bold text-white text-base">1. Select Sample Roast / Caw-Back Clip</h2>
+        <select id="clip-sel" onchange="scoreClip()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs">
+          <option value="0">Clip #104 - Clean Hinglish Tech/Startup Roast (Consent Verified)</option>
+          <option value="1">Clip #109 - Banned Topic Violation (Weight / Caste Slur in Hinglish)</option>
+          <option value="2">Clip #115 - Flat Delivery / Early Swipe-Away at 2.4s</option>
+        </select>
+        <div id="transcript-box" class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 font-mono text-xs"></div>
+        <div class="space-y-2 pt-1">
+          <label class="flex justify-between text-xs text-slate-300"><span>Viewer Rewatch Rate (%)</span><span id="rw-lbl" class="font-mono text-amber-300">34%</span></label>
+          <input id="rw-slider" type="range" min="0" max="80" value="34" oninput="scoreClip()" class="w-full accent-amber-400" />
+          <label class="flex justify-between text-xs text-slate-300"><span>Avg Swipe-Away Second (of 18s)</span><span id="sw-lbl" class="font-mono text-amber-300">15.5s</span></label>
+          <input id="sw-slider" type="range" min="1" max="18" step="0.5" value="15.5" oninput="scoreClip()" class="w-full accent-amber-400" />
+        </div>
+      </div>
+      <div class="lg:col-span-7 card p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="font-bold text-white text-base">2. POST /v1/roast/evaluate -> Node.js Payload</h2>
+          <span id="safety-pill" class="px-2.5 py-1 rounded text-xs font-mono font-semibold"></span>
+        </div>
+        <div id="score-cards" class="grid grid-cols-3 gap-3"></div>
+        <pre id="api-json" class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-emerald-300 overflow-x-auto"></pre>
+      </div>
+    </div>
+    
+  </div>
+  <script>
+  
+    const CLIPS = [
+      { id: "kro_vid_104", creator_new: true, consent: true, audio_laugh: 86, wit: 89, transcript: "Bhai tera startup pitch sunke VC ne Wi-Fi band kar diya - bola latency nahi, founder hi offline hai!", banned: [], base_rw: 34, base_sw: 15.5 },
+      { id: "kro_vid_109", creator_new: false, consent: true, audio_laugh: 52, wit: 24, transcript: "Arre apna weight aur jaat dekh ke reel banaya kar...", banned: ["weight_shaming", "caste_reference"], base_rw: 12, base_sw: 6.0 },
+      { id: "kro_vid_115", creator_new: false, consent: true, audio_laugh: 14, wit: 31, transcript: "Uh... nice haircut bro, looks super weird I guess...", banned: [], base_rw: 4, base_sw: 2.5 }
+    ];
+    let lastIdx = -1;
+    function scoreClip() {
+      const idx = parseInt(document.getElementById('clip-sel').value, 10);
+      const c = CLIPS[idx];
+      if (idx !== lastIdx) {
+        document.getElementById('rw-slider').value = c.base_rw;
+        document.getElementById('sw-slider').value = c.base_sw;
+        lastIdx = idx;
+      }
+      const rw = Number(document.getElementById('rw-slider').value);
+      const sw = Number(document.getElementById('sw-slider').value);
+      document.getElementById('rw-lbl').textContent = rw + '%';
+      document.getElementById('sw-lbl').textContent = sw.toFixed(1) + 's';
+      const audScore = Math.min(100, Math.round((rw * 1.1) + ((sw / 18) * 55)));
+      const laughScore = Math.round(c.audio_laugh * 0.35 + c.wit * 0.35 + audScore * 0.30);
+      const flagged = c.banned.length > 0;
+      document.getElementById('transcript-box').innerHTML = `<div class="text-slate-400">STT (Whisper-Hinglish v3):</div><div class="text-white">"${c.transcript}"</div>`;
+      const pill = document.getElementById('safety-pill');
+      pill.className = flagged ? 'px-2.5 py-1 rounded text-xs font-mono bg-rose-500/20 text-rose-300' : 'px-2.5 py-1 rounded text-xs font-mono bg-emerald-500/20 text-emerald-300';
+      pill.textContent = flagged ? 'FLAGGED -> HUMAN REVIEW' : 'SAFETY: CLEAR';
+      document.getElementById('score-cards').innerHTML = `
+        <div class="p-3 rounded-xl bg-slate-950 border border-slate-800"><div class="text-slate-400 text-xs">Audio Laughter</div><div class="text-lg font-bold text-white">${c.audio_laugh}/100</div></div>
+        <div class="p-3 rounded-xl bg-slate-950 border border-slate-800"><div class="text-slate-400 text-xs">Hinglish Wit LLM</div><div class="text-lg font-bold text-white">${c.wit}/100</div></div>
+        <div class="p-3 rounded-xl bg-slate-950 border border-slate-800"><div class="text-slate-400 text-xs">Final Laugh Score</div><div class="text-lg font-bold ${flagged ? 'text-rose-400' : 'text-amber-300'}">${flagged ? 0 : laughScore}/100</div></div>
+      `;
+      document.getElementById('api-json').textContent = JSON.stringify({
+        video_id: c.id,
+        consent_opt_in: c.consent,
+        hinglish_transcript: c.transcript,
+        laugh_score: flagged ? 0 : laughScore,
+        signals: { audio_reaction: c.audio_laugh, comeback_wit: c.wit, audience_retention: audScore, avg_swipe_sec: sw },
+        safety: { status: flagged ? "HOLD_FOR_MODERATION" : "APPROVED", banned_hits: c.banned },
+        launch_feed_rank_score: flagged ? -1 : Number((laughScore * 0.65 + (c.creator_new ? 18 : 6)).toFixed(1))
+      }, null, 2);
+    }
+    scoreClip();
+    
+  </script>
+</body>
+</html>

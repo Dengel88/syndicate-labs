@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>n8n Cloud -> BigQuery DTC Ecommerce Reporting Pipeline</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Work Sans', sans-serif; background: #090d16; color: #f1f5f9; font-variant-numeric: tabular-nums; }
+    h1, h2, h3, .font-display { font-family: 'Outfit', sans-serif; }
+    .accent-pill { background: rgba(14,165,233,0.15); color: #7dd3fc; border: 1px solid #0ea5e955; }
+    .accent-btn { background: #0ea5e9; color: #090d16; font-weight: 600; }
+    .accent-btn:hover { filter: brightness(1.08); }
+    .card { background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(51, 65, 85, 0.8); border-radius: 16px; }
+  </style>
+</head>
+<body class="min-h-screen antialiased p-4 sm:p-8">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <header class="card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="space-y-1">
+        <span class="accent-pill inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold">DATA ENGINEERING · ZERO DUPLICATE ROWS</span>
+        <h1 class="text-xl sm:text-2xl font-bold text-white">n8n Cloud -> BigQuery DTC Ecommerce Reporting Pipeline</h1>
+        <p class="text-xs sm:text-sm text-slate-400">Deterministic Daily Sync (2x Shopify + Meta/Google Ads + Cin7 + Xero) · 30-Day Idempotent MERGE · SHA-256 PII Hashing</p>
+      </div>
+      <span class="text-xs font-mono text-slate-400">Interactive Architecture Testbed</span>
+    </header>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 text-xs sm:text-sm">
+      <div class="lg:col-span-5 card p-5 space-y-4">
+        <h2 class="font-bold text-white text-base">1. Source Connectors &amp; 30-Day Re-Pull Test</h2>
+        <div class="space-y-2" id="src-list"></div>
+        <div class="flex gap-2">
+          <button type="button" onclick="runMerge(false)" class="cursor-pointer flex-1 py-2.5 rounded-xl accent-btn text-xs">Run Daily 30d MERGE</button>
+          <button type="button" onclick="runMerge(true)" class="cursor-pointer flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs">Re-Run Job (Idempotency Check)</button>
+        </div>
+        <button type="button" onclick="triggerAlert()" class="cursor-pointer w-full py-2 rounded-xl border border-rose-500/40 text-rose-300 hover:bg-rose-500/10 text-xs">Simulate Cin7 Token Expiry -> Test Same-Day Alert</button>
+      </div>
+      <div class="lg:col-span-7 card p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="font-bold text-white text-base">2. BigQuery Raw MERGE &amp; Finance SQL Views</h2>
+          <span id="dq-badge" class="px-2.5 py-0.5 rounded text-xs font-mono bg-emerald-500/20 text-emerald-300">Duplicates: 0 · Xero Var: 0.4%</span>
+        </div>
+        <div id="kpi-row" class="grid grid-cols-4 gap-2.5 text-center"></div>
+        <pre id="bq-log" class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-sky-300 overflow-x-auto whitespace-pre-wrap"></pre>
+      </div>
+    </div>
+    
+  </div>
+  <script>
+  
+    let runCount = 1;
+    const SOURCES = [
+      { name: "Shopify Store #1 (EU) + Store #2 (UK)", rows: "14,820 orders", mode: "30d Rolling MERGE" },
+      { name: "Meta Ads + Google Ads Daily Spend", rows: "620 campaign-days", mode: "30d Rolling MERGE" },
+      { name: "Cin7 SKU Stock Snapshot + PO Cost", rows: "1,140 SKUs", mode: "Daily Partition Append" },
+      { name: "Xero Monthly P&L + Open Bills", rows: "Reconciled (0.4% delta)", mode: "Idempotent Upsert" }
+    ];
+    document.getElementById('src-list').innerHTML = SOURCES.map(s => `
+      <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex justify-between items-center">
+        <div><div class="font-semibold text-white text-xs">${s.name}</div><div class="text-[11px] text-slate-400">${s.mode}</div></div>
+        <span class="font-mono text-xs text-emerald-400">${s.rows}</span>
+      </div>
+    `).join('');
+    function renderKpis() {
+      document.getElementById('kpi-row').innerHTML = `
+        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800"><div class="text-[11px] text-slate-400">Net Rev (MTD)</div><div class="font-bold text-white">EUR 184.2K</div></div>
+        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800"><div class="text-[11px] text-slate-400">MER</div><div class="font-bold text-emerald-400">3.84x</div></div>
+        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800"><div class="text-[11px] text-slate-400">nCAC</div><div class="font-bold text-white">EUR 29.10</div></div>
+        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800"><div class="text-[11px] text-slate-400">CM3 Margin</div><div class="font-bold text-sky-300">28.6%</div></div>
+      `;
+    }
+    function runMerge(isReplay) {
+      if (isReplay) runCount++;
+      document.getElementById('dq-badge').className = 'px-2.5 py-0.5 rounded text-xs font-mono bg-emerald-500/20 text-emerald-300';
+      document.getElementById('dq-badge').textContent = `Run #${runCount} · Duplicate Rows Inserted: 0`;
+      document.getElementById('bq-log').textContent = `-- BigQuery Deterministic Upsert (n8n Cloud Run #${runCount})
+MERGE \`dtc_raw.shopify_orders\` T
+USING \`dtc_staging.shopify_30d_pull\` S
+ON T.store_id = S.store_id AND T.order_id = S.order_id
+WHEN MATCHED THEN UPDATE SET net_amount = S.net_amount, refund_total = S.refund_total, customer_hash = TO_HEX(SHA256(LOWER(TRIM(S.email))))
+WHEN NOT MATCHED THEN INSERT ROW;
+
+-- Result: ${isReplay ? '0 new rows inserted, 14 late refunds updated cleanly, 0 duplicates.' : '192 new orders + 11 retroactive refunds synced; Shopify == BigQuery exact match.'}`;
+    }
+    function triggerAlert() {
+      document.getElementById('dq-badge').className = 'px-2.5 py-0.5 rounded text-xs font-mono bg-rose-500/20 text-rose-300';
+      document.getElementById('dq-badge').textContent = 'ALERT FIRED -> SLACK + EMAIL';
+      document.getElementById('bq-log').textContent = `[n8n Error Trigger · 06:04 SGT]
+Workflow: cin7_daily_stock_snapshot
+Reason: HTTP 401 Unauthorized (Cin7 API key rotated)
+Freshness Check: raw.cin7_stock_daily row_count == 0 for 2026-11-25
+Action: Alert dispatched to owner + finance channel with 1-click retry URL.`;
+    }
+    renderKpis();
+    runMerge(false);
+    
+  </script>
+</body>
+</html>

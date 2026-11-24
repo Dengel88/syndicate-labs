@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LexFlow - Law Firm Matter Intake, Citation-Locked AI & RBAC Audit Trail</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Work Sans', sans-serif; background: #090d16; color: #f1f5f9; font-variant-numeric: tabular-nums; }
+    h1, h2, h3, .font-display { font-family: 'Outfit', sans-serif; }
+    .accent-pill { background: rgba(139,92,246,0.16); color: #c4b5fd; border: 1px solid #8b5cf655; }
+    .accent-btn { background: #8b5cf6; color: #090d16; font-weight: 600; }
+    .accent-btn:hover { filter: brightness(1.08); }
+    .card { background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(51, 65, 85, 0.8); border-radius: 16px; }
+  </style>
+</head>
+<body class="min-h-screen antialiased p-4 sm:p-8">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <header class="card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="space-y-1">
+        <span class="accent-pill inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold">LEGAL OPS AUTOMATION · FASTAPI + POSTGRESQL + CLAUDE</span>
+        <h1 class="text-xl sm:text-2xl font-bold text-white">LexFlow - Law Firm Matter Intake, Citation-Locked AI & RBAC Audit Trail</h1>
+        <p class="text-xs sm:text-sm text-slate-400">Role-Based Permissions (Partner / Paralegal / Intake) + Source-Span Grounded Summaries + Mandatory Human Approval Log</p>
+      </div>
+      <span class="text-xs font-mono text-slate-400">Interactive Architecture Testbed</span>
+    </header>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 text-xs sm:text-sm">
+      <div class="lg:col-span-5 card p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="font-bold text-white text-base">1. Active Staff Role (RBAC Check)</h2>
+          <select id="role-sel" onchange="renderRole()" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs">
+            <option value="Partner">Managing Partner (Full Approve + Audit)</option>
+            <option value="Paralegal">Paralegal (Draft AI Summary Only)</option>
+            <option value="Intake">Intake Clerk (No Privileged Docs)</option>
+          </select>
+        </div>
+        <div id="matter-doc" class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2 text-xs"></div>
+        <button type="button" onclick="approveSummary()" id="approve-btn" class="cursor-pointer w-full py-2.5 rounded-xl accent-btn text-xs">Approve AI Summary &amp; Create Follow-Up Tasks</button>
+      </div>
+      <div class="lg:col-span-7 card p-5 space-y-4">
+        <h2 class="font-bold text-white text-base">2. Citation-Locked AI Output &amp; Immutable Audit Trail</h2>
+        <div id="ai-claims" class="space-y-2"></div>
+        <pre id="audit-log" class="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-violet-300 whitespace-pre-wrap"></pre>
+      </div>
+    </div>
+    
+  </div>
+  <script>
+  
+    const AUDIT = [
+      "2026-11-25 09:12:04 | paralegal_m_chen | AI_DRAFT_GENERATED | Matter #2026-884 | model=claude-sonnet | 3 cited spans, 1 unverified date flagged"
+    ];
+    function renderRole() {
+      const role = document.getElementById('role-sel').value;
+      const docBox = document.getElementById('matter-doc');
+      const claimsBox = document.getElementById('ai-claims');
+      if (role === 'Intake') {
+        docBox.innerHTML = `<div class="text-rose-300 font-semibold">RBAC 403: Intake Clerks can submit new client conflict checks, but privileged deposition notes on Matter #2026-884 are masked.</div>`;
+        claimsBox.innerHTML = `<div class="p-3 rounded-xl bg-slate-950 border border-rose-500/30 text-xs text-slate-400">Switch to Paralegal or Managing Partner to view privileged AI document extraction.</div>`;
+      } else {
+        docBox.innerHTML = `<div class="text-slate-400 font-mono text-[11px]">Matter #2026-884 · Commercial Lease Dispute</div><p class="text-slate-200">[Para 4] Notice of default was served via certified mail on Oct 14, 2026. [Para 9] Cure period under Section 12.2 expires 30 calendar days after receipt.</p>`;
+        claimsBox.innerHTML = `
+          <div class="p-2.5 rounded-xl bg-slate-950 border border-emerald-500/30 text-xs"><span class="text-emerald-400 font-mono">[VERIFIED · Para 4]</span> Notice of default served Oct 14, 2026.</div>
+          <div class="p-2.5 rounded-xl bg-slate-950 border border-emerald-500/30 text-xs"><span class="text-emerald-400 font-mono">[VERIFIED · Para 9]</span> 30-day contractual cure window under Sec 12.2.</div>
+          <div class="p-2.5 rounded-xl bg-slate-950 border border-amber-500/40 text-xs"><span class="text-amber-300 font-mono">[NEEDS HUMAN CHECK]</span> Exact certified-mail delivery receipt date not attached in upload; AI blocked from guessing deadline.</div>
+        `;
+      }
+      document.getElementById('audit-log').textContent = AUDIT.join('\n');
+    }
+    function approveSummary() {
+      const role = document.getElementById('role-sel').value;
+      if (role !== 'Partner') {
+        AUDIT.unshift(`2026-11-25 09:18:10 | role=${role} | APPROVAL_BLOCKED | Final matter sign-off requires Partner permission.`);
+      } else {
+        AUDIT.unshift(`2026-11-25 09:18:22 | partner_j_ross | APPROVED_AND_DISPATCHED | Task created: Request USPS return receipt from client.`);
+      }
+      renderRole();
+    }
+    renderRole();
+    
+  </script>
+</body>
+</html>

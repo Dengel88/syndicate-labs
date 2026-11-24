@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Baby Reveal - Self-Hosted ComfyUI + FLUX.2 Klein Ultrasound Pipeline</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Work Sans', sans-serif; background: #090d16; color: #f1f5f9; font-variant-numeric: tabular-nums; }
+    h1, h2, h3, .font-display { font-family: 'Outfit', sans-serif; }
+    .accent-pill { background: rgba(245,158,11,0.15); color: #fcd34d; border: 1px solid #f59e0b55; }
+    .accent-btn { background: #f59e0b; color: #090d16; font-weight: 600; }
+    .accent-btn:hover { filter: brightness(1.08); }
+    .card { background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(51, 65, 85, 0.8); border-radius: 16px; }
+  </style>
+</head>
+<body class="min-h-screen antialiased p-4 sm:p-8">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <header class="card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="space-y-1">
+        <span class="accent-pill inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold">PHASE 1 POC · SELF-HOSTED COMFYUI + FLUX.2 KLEIN</span>
+        <h1 class="text-xl sm:text-2xl font-bold text-white">Baby Reveal - Self-Hosted ComfyUI + FLUX.2 Klein Ultrasound Pipeline</h1>
+        <p class="text-xs sm:text-sm text-slate-400">Zero-API-Fee Open-Weight Img2Img + Depth/Canny Fetal Contour Conditioning + Automated Headless Python API</p>
+      </div>
+      <span class="text-xs font-mono text-slate-400">Interactive Architecture Testbed</span>
+    </header>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 text-xs sm:text-sm">
+      <div class="lg:col-span-5 card p-5 space-y-4">
+        <h2 class="font-bold text-white text-base">1. Filter Mode &amp; Contour Lock Controls</h2>
+        <select id="u-filter" onchange="updateWorkflow()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs">
+          <option value="baby_reveal">Phase 1 PoC: Baby Reveal (Photorealistic Keepsake)</option>
+          <option value="pure_echo">Phase 2 Ready: Pure Echo (Clarity &amp; Contrast Preserve)</option>
+          <option value="dream_baby">Phase 2 Ready: Dream Baby (Soft Warm Studio Portrait)</option>
+        </select>
+        <div class="space-y-2">
+          <label class="flex justify-between text-xs"><span>3D Ultrasound Depth + Canny Lock</span><span id="c-lbl" class="font-mono text-amber-300">0.78</span></label>
+          <input id="c-slider" type="range" min="0.45" max="0.92" step="0.01" value="0.78" oninput="updateWorkflow()" class="w-full accent-amber-400" />
+          <label class="flex justify-between text-xs"><span>Img2Img Denoise (Preserve Pose vs Skin Realism)</span><span id="d-lbl" class="font-mono text-amber-300">0.54</span></label>
+          <input id="d-slider" type="range" min="0.30" max="0.72" step="0.01" value="0.54" oninput="updateWorkflow()" class="w-full accent-amber-400" />
+        </div>
+        <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300">
+          <strong>Zero Ongoing Licensing Fees:</strong> Runs headless via `comfy_runner.py` on your own 16-24GB GPU server (`FLUX.2-klein-4B` Apache-2.0 / commercial-clear weights), ready for WooCommerce webhook -> email delivery.
+        </div>
+      </div>
+      <div class="lg:col-span-7 card p-5 space-y-3">
+        <h2 class="font-bold text-white text-base">2. Headless ComfyUI API Workflow Payload (Auto-Triggered on Upload)</h2>
+        <pre id="comfy-json" class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-amber-200 overflow-x-auto whitespace-pre-wrap"></pre>
+      </div>
+    </div>
+    
+  </div>
+  <script>
+  
+    function updateWorkflow() {
+      const f = document.getElementById('u-filter').value;
+      const c = Number(document.getElementById('c-slider').value);
+      const d = Number(document.getElementById('d-slider').value);
+      document.getElementById('c-lbl').textContent = c.toFixed(2);
+      document.getElementById('d-lbl').textContent = d.toFixed(2);
+      document.getElementById('comfy-json').textContent = JSON.stringify({
+        filter_preset: f,
+        license_audit: "100% self-hosted open-weight commercial pipeline (zero paid 3rd-party API calls)",
+        pre_cv_cleanup: "OpenCV ultrasound text/border crop + bilateral speckle reduction + fetal face ROI align",
+        comfyui_nodes: {
+          base_model: "flux-2-klein-4b.safetensors",
+          controlnet_union: { depth_anything_v2_weight: c, soft_edge_hed_weight: Number((c * 0.65).toFixed(2)), end_percent: 0.82 },
+          ksampler: { steps: 20, cfg: 3.5, denoise: f === 'pure_echo' ? 0.28 : d, sampler: "euler" },
+          post_restore: "subtle skin-texture detailer + warm nursery lighting LUT"
+        },
+        woocommerce_ready_hook: "POST /api/v1/process-ultrasound -> returns finished PNG path for automatic email dispatch"
+      }, null, 2);
+    }
+    updateWorkflow();
+    
+  </script>
+</body>
+</html>

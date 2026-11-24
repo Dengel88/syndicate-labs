@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PulseWire - Editorial Control Room, Story Dedup & 9:16 / 4:5 Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Work Sans', sans-serif; background: #090d16; color: #f1f5f9; font-variant-numeric: tabular-nums; }
+    h1, h2, h3, .font-display { font-family: 'Outfit', sans-serif; }
+    .accent-pill { background: rgba(244,63,94,0.15); color: #fda4af; border: 1px solid #f43f5e55; }
+    .accent-btn { background: #f43f5e; color: #090d16; font-weight: 600; }
+    .accent-btn:hover { filter: brightness(1.08); }
+    .card { background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(51, 65, 85, 0.8); border-radius: 16px; }
+  </style>
+</head>
+<body class="min-h-screen antialiased p-4 sm:p-8">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <header class="card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="space-y-1">
+        <span class="accent-pill inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold">MEDIA OPS ENGINE · CLOUD DASHBOARD + PUBLIC WIRE</span>
+        <h1 class="text-xl sm:text-2xl font-bold text-white">PulseWire - Editorial Control Room, Story Dedup & 9:16 / 4:5 Studio</h1>
+        <p class="text-xs sm:text-sm text-slate-400">Multi-Source Breaking News Clustering + Clean Headline Wire + Instant 4:5 IG Graphic & 9:16 Clip Formatter</p>
+      </div>
+      <span class="text-xs font-mono text-slate-400">Interactive Architecture Testbed</span>
+    </header>
+    
+    <div class="space-y-4 text-xs sm:text-sm">
+      <div class="flex gap-2">
+        <button type="button" onclick="switchTab('control')" id="tab-control" class="cursor-pointer px-4 py-2 rounded-xl accent-btn text-xs">Editorial Control Room (Backend)</button>
+        <button type="button" onclick="switchTab('wire')" id="tab-wire" class="cursor-pointer px-4 py-2 rounded-xl bg-slate-800 text-slate-200 text-xs">Public Headline Aggregator (Drudge-Clean View)</button>
+      </div>
+      <div id="view-control" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-6 card p-5 space-y-3">
+          <h2 class="font-bold text-white text-base">Incoming Clustered Wire (Deduped Across 42 Sources)</h2>
+          <div id="clusters" class="space-y-2.5"></div>
+        </div>
+        <div class="lg:col-span-6 card p-5 space-y-4">
+          <h2 class="font-bold text-white text-base">1-Click 4:5 IG Card &amp; 9:16 Vertical Video Export</h2>
+          <input id="hl-edit" oninput="updateCard()" value="SENATE BLOCKS LATE-NIGHT SPENDING BILL IN 51-49 FLOOR VOTE" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white" />
+          <div class="grid grid-cols-2 gap-4">
+            <div class="aspect-[4/5] rounded-xl bg-gradient-to-b from-slate-800 to-black border border-rose-500/50 p-3 flex flex-col justify-between">
+              <span class="px-2 py-0.5 rounded bg-rose-600 text-[10px] font-bold w-max">BREAKING · 4:5 IG TEMPLATE</span>
+              <div id="ig-hl" class="font-bold text-white text-sm leading-snug"></div>
+            </div>
+            <div class="aspect-[9/16] max-h-60 mx-auto w-full rounded-xl bg-gradient-to-b from-slate-900 via-slate-800 to-black border border-sky-500/40 p-3 flex flex-col justify-between">
+              <span class="text-[10px] font-mono text-sky-300">9:16 AUTO-REFRAME + SUBS</span>
+              <div class="bg-black/80 p-1.5 rounded text-center text-[11px] font-bold text-amber-300">"51 to 49 - the motion fails..."</div>
+              <span class="text-[10px] font-mono text-slate-400">Watermark + Ready MP4</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="view-wire" class="hidden card p-6 bg-stone-50 text-stone-900 space-y-4">
+        <div class="border-b-2 border-stone-900 pb-2 flex justify-between items-baseline">
+          <span class="font-mono text-xs font-bold text-rose-700">LIVE BREAKING WIRE · UPDATED 2M AGO</span>
+          <span class="font-bold text-lg tracking-tight">PULSEWIRE NATIONAL</span>
+          <span class="font-mono text-xs">POLITICS · US · MARKETS · CLIPS</span>
+        </div>
+        <div id="public-headlines" class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-medium"></div>
+      </div>
+    </div>
+    
+  </div>
+  <script>
+  
+    const STORIES = [
+      { hl: "SENATE BLOCKS LATE-NIGHT SPENDING BILL IN 51-49 FLOOR VOTE", sources: "Grouped from 6 feeds (AP, C-SPAN Clip, X @SenateCloakroom)", score: 97, approved: true },
+      { hl: "BORDER PATROL RELEASES NEW Q4 DRONE SURVEILLANCE FOOTAGE", sources: "Grouped from 4 feeds + Viral X Video Candidate (0:38)", score: 92, approved: true },
+      { hl: "TREASURY YIELDS SPIKE AFTER SURPRISE MANUFACTURING PRINT", sources: "Grouped from 3 feeds (CNBC, ZeroHedge, Fed Release)", score: 85, approved: false }
+    ];
+    function renderClusters() {
+      document.getElementById('clusters').innerHTML = STORIES.map((s, i) => `
+        <div class="p-3 rounded-xl bg-slate-950 border ${s.approved ? 'border-emerald-500/40' : 'border-slate-800'} space-y-1.5">
+          <div class="flex justify-between text-[11px] font-mono"><span class="text-rose-300">Rank ${s.score}/100</span><span class="text-slate-400">${s.sources}</span></div>
+          <div class="font-bold text-white text-xs">${s.hl}</div>
+          <div class="flex gap-2 pt-1">
+            <button type="button" onclick="loadHeadline(${i})" class="cursor-pointer px-2.5 py-1 rounded bg-slate-800 text-[11px] text-white">Load into 4:5 / 9:16 Studio</button>
+            <button type="button" onclick="toggleApprove(${i})" class="cursor-pointer px-2.5 py-1 rounded ${s.approved ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-300'} text-[11px]">${s.approved ? 'Live on Public Wire' : 'Approve to Wire'}</button>
+          </div>
+        </div>
+      `).join('');
+      document.getElementById('public-headlines').innerHTML = STORIES.filter(s => s.approved).map(s => `
+        <div class="p-3 border border-stone-300 rounded bg-white shadow-sm space-y-1">
+          <div class="font-bold text-stone-950 underline">${s.hl}</div>
+          <div class="text-[11px] text-stone-500">${s.sources}</div>
+        </div>
+      `).join('');
+    }
+    function loadHeadline(i) { document.getElementById('hl-edit').value = STORIES[i].hl; updateCard(); }
+    function toggleApprove(i) { STORIES[i].approved = !STORIES[i].approved; renderClusters(); }
+    function updateCard() { document.getElementById('ig-hl').textContent = document.getElementById('hl-edit').value; }
+    function switchTab(t) {
+      document.getElementById('view-control').classList.toggle('hidden', t !== 'control');
+      document.getElementById('view-wire').classList.toggle('hidden', t !== 'wire');
+    }
+    renderClusters(); updateCard();
+    
+  </script>
+</body>
+</html>

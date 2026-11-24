@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trusty House Buyers - 1-County Street View Distress Scanner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Work Sans', sans-serif; background: #090d16; color: #f1f5f9; font-variant-numeric: tabular-nums; }
+    h1, h2, h3, .font-display { font-family: 'Outfit', sans-serif; }
+    .accent-pill { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid #10b98155; }
+    .accent-btn { background: #10b981; color: #090d16; font-weight: 600; }
+    .accent-btn:hover { filter: brightness(1.08); }
+    .card { background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(51, 65, 85, 0.8); border-radius: 16px; }
+  </style>
+</head>
+<body class="min-h-screen antialiased p-4 sm:p-8">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <header class="card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="space-y-1">
+        <span class="accent-pill inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold">PAID 1-COUNTY PILOT · ZERO DISK IMAGE STORAGE</span>
+        <h1 class="text-xl sm:text-2xl font-bold text-white">Trusty House Buyers - 1-County Street View Distress Scanner</h1>
+        <p class="text-xs sm:text-sm text-slate-400">OSM Road-Snap Bearing -> Free Metadata Gate (>=2018) -> RAM-Only Vision Scoring (<$0.004/parcel) -> GoHighLevel Export</p>
+      </div>
+      <span class="text-xs font-mono text-slate-400">Interactive Architecture Testbed</span>
+    </header>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 text-xs sm:text-sm">
+      <div class="lg:col-span-6 card p-5 space-y-3">
+        <div class="flex justify-between items-center">
+          <h2 class="font-bold text-white text-base">1. Ranked County Parcel Queue</h2>
+          <span class="font-mono text-xs text-emerald-400">Disk Images Stored: 0 bytes · AI Cost: $0.0034/parcel</span>
+        </div>
+        <div id="parcel-list" class="space-y-2.5"></div>
+      </div>
+      <div class="lg:col-span-6 card p-5 space-y-3">
+        <h2 class="font-bold text-white text-base">2. Transient RAM Analysis JSON &amp; GoHighLevel Push</h2>
+        <pre id="parcel-json" class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-emerald-300 overflow-x-auto whitespace-pre-wrap"></pre>
+        <button type="button" onclick="pushGhl()" class="cursor-pointer w-full py-2.5 rounded-xl accent-btn text-xs">Approve Lead -> Push Contact + Tags to GoHighLevel</button>
+      </div>
+    </div>
+    
+  </div>
+  <script>
+  
+    let cur = 0;
+    const PARCELS = [
+      { id: "APN-440-192-08", addr: "1418 Elmwood Ave (Residential)", pano: "CAoSLEFGMVFpcE9...", date: "2024-06", bearing: 274.2, score: 88, conf: 0.93, flags: ["roof_tarp_damage", "overgrown_yard", "peeling_paint"], note: "Blue roof tarp on south gable + waist-high front weeds." },
+      { id: "APN-440-205-11", addr: "902 Maple Crest Rd (Residential)", pano: "CAoSLEFGMVFpcF2...", date: "2023-09", bearing: 91.8, score: 79, conf: 0.89, flags: ["boarded_windows", "vacancy_signs"], note: "OSB boarding on ground-floor window + uncollected porch debris." },
+      { id: "APN-440-318-02", addr: "415 Oak Hollow Dr (Skipped - Pano 2016)", pano: "SKIPPED_FREE_META", date: "2016-04", bearing: 180.0, score: 0, conf: 1.0, flags: [], note: "Filtered via free Street View Metadata API (<2018) -> $0 Static/AI spend!" }
+    ];
+    function renderParcels() {
+      document.getElementById('parcel-list').innerHTML = PARCELS.map((p, i) => `
+        <div onclick="selParcel(${i})" class="cursor-pointer p-3 rounded-xl bg-slate-950 border ${i === cur ? 'border-emerald-500' : 'border-slate-800'} flex justify-between items-center">
+          <div><div class="font-bold text-white text-xs">${p.addr}</div><div class="text-[11px] text-slate-400 font-mono">${p.id} · Pano: ${p.date} · Bearing: ${p.bearing} deg</div></div>
+          <span class="px-2 py-0.5 rounded font-mono text-xs ${p.score >= 75 ? 'bg-amber-500/20 text-amber-300' : 'bg-slate-800 text-slate-400'}">Score: ${p.score}</span>
+        </div>
+      `).join('');
+      const p = PARCELS[cur];
+      document.getElementById('parcel-json').textContent = JSON.stringify({
+        parcel_id: p.id, pano_id: p.pano, capture_date: p.date, camera_bearing_deg: p.bearing,
+        image_persisted_to_disk: false, distress_score: p.score, confidence: p.conf,
+        flags: p.flags, reasoning: p.note
+      }, null, 2);
+    }
+    function selParcel(i) { cur = i; renderParcels(); }
+    function pushGhl() {
+      const p = PARCELS[cur];
+      document.getElementById('parcel-json').textContent = `POST /ghl/v1/contacts/upsert (200 OK)
+` + JSON.stringify({
+        address1: p.addr, customField_parcel_id: p.id, customField_distress_score: p.score,
+        tags: ["virtual_d4d_approved", ...p.flags], skip_trace_csv_ready: true
+      }, null, 2);
+    }
+    renderParcels();
+    
+  </script>
+</body>
+</html>

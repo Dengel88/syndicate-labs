@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude Job-Triage Prompt Evaluation & Deterministic Draft Scorer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Work Sans', sans-serif; background: #090d16; color: #f1f5f9; font-variant-numeric: tabular-nums; }
+    h1, h2, h3, .font-display { font-family: 'Outfit', sans-serif; }
+    .accent-pill { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid #10b98155; }
+    .accent-btn { background: #10b981; color: #090d16; font-weight: 600; }
+    .accent-btn:hover { filter: brightness(1.08); }
+    .card { background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(51, 65, 85, 0.8); border-radius: 16px; }
+  </style>
+</head>
+<body class="min-h-screen antialiased p-4 sm:p-8">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <header class="card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="space-y-1">
+        <span class="accent-pill inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold">LOCAL PYTHON EVAL HARNESS · ZERO PAID TOOLS</span>
+        <h1 class="text-xl sm:text-2xl font-bold text-white">Claude Job-Triage Prompt Evaluation & Deterministic Draft Scorer</h1>
+        <p class="text-xs sm:text-sm text-slate-400">Stratified Held-Out Eval Split (260 Labeled Posts) + Bid Precision/Recall + Disagreement Taxonomy + Rule Checker</p>
+      </div>
+      <span class="text-xs font-mono text-slate-400">Interactive Architecture Testbed</span>
+    </header>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 text-xs sm:text-sm">
+      <div class="lg:col-span-5 card p-5 space-y-4">
+        <h2 class="font-bold text-white text-base">1. Compare Prompt Variants on Held-Out Split (n=78)</h2>
+        <select id="p-ver" onchange="runEval()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs">
+          <option value="v1">Current Prompt v1 (Baseline - tuned by feel)</option>
+          <option value="v2">Candidate Prompt v2 (+ Budget Floor &amp; Vague-Scope Gate)</option>
+        </select>
+        <div id="metrics-grid" class="grid grid-cols-3 gap-2.5 text-center"></div>
+        <div id="disagreements" class="space-y-2 text-xs"></div>
+      </div>
+      <div class="lg:col-span-7 card p-5 space-y-3">
+        <h2 class="font-bold text-white text-base">2. Draft Proposal Rule Audit (Code First, LLM Judge Only When Needed)</h2>
+        <textarea id="draft-in" rows="4" oninput="checkDraft()" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs font-mono text-white">I am thrilled to delve into your robust project! We can do this for $180 fixed.</textarea>
+        <div id="rule-results" class="space-y-2"></div>
+      </div>
+    </div>
+    
+  </div>
+  <script>
+  
+    const EVALS = {
+      v1: { prec: "68.4%", rec: "84.6%", f1: "75.6%", errs: ["11 False Positives: Bid on <$250 vague 'quick AI app' posts human skipped", "5 False Positives: Ignored client US-only location restriction", "4 False Negatives: Skipped good fixed-price pilots worded briefly"] },
+      v2: { prec: "88.9%", rec: "86.5%", f1: "87.7%", errs: ["3 False Positives: Ambiguous hourly range without hours estimate", "4 False Negatives: Conservative skip on NDA-redacted scope"] }
+    };
+    function runEval() {
+      const d = EVALS[document.getElementById('p-ver').value];
+      document.getElementById('metrics-grid').innerHTML = `
+        <div class="p-3 rounded-xl bg-slate-950 border border-slate-800"><div class="text-slate-400 text-[11px]">Precision ("bid")</div><div class="text-lg font-bold text-emerald-400">${d.prec}</div></div>
+        <div class="p-3 rounded-xl bg-slate-950 border border-slate-800"><div class="text-slate-400 text-[11px]">Recall ("bid")</div><div class="text-lg font-bold text-white">${d.rec}</div></div>
+        <div class="p-3 rounded-xl bg-slate-950 border border-slate-800"><div class="text-slate-400 text-[11px]">F1 Agreement</div><div class="text-lg font-bold text-sky-300">${d.f1}</div></div>
+      `;
+      document.getElementById('disagreements').innerHTML = `<div class="text-slate-400 font-semibold">Top Disagreement Reasons vs Human Calls:</div>` +
+        d.errs.map(e => `<div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800">${e}</div>`).join('');
+    }
+    function checkDraft() {
+      const txt = document.getElementById('draft-in').value;
+      const banned = ['thrilled', 'delve', 'robust', 'seamless', 'leverage'].filter(w => txt.toLowerCase().includes(w));
+      const nums = (txt.match(/\$(\d+)/) || []);
+      const price = nums[1] ? Number(nums[1]) : null;
+      const words = txt.trim().split(/\s+/).filter(Boolean).length;
+      const checks = [
+        { ok: banned.length === 0, msg: banned.length ? `FAIL [Python Regex]: Banned phrases detected (${banned.join(', ')})` : `PASS [Python Regex]: Zero banned cliches` },
+        { ok: !price || price >= 300, msg: (price && price < 300) ? `FAIL [Python Pricing Rule]: Quoted $${price} is below $300 pricing floor` : `PASS [Python Pricing Rule]: Floor respected` },
+        { ok: words >= 25 && words <= 180, msg: `INFO [Python Length Check]: ${words} words (target 40-160)` }
+      ];
+      document.getElementById('rule-results').innerHTML = checks.map(c => `<div class="p-2.5 rounded-xl bg-slate-950 border ${c.ok ? 'border-emerald-500/40 text-emerald-300' : 'border-rose-500/40 text-rose-300'} font-mono text-xs">${c.msg}</div>`).join('');
+    }
+    runEval(); checkDraft();
+    
+  </script>
+</body>
+</html>

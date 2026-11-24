@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trimly Marketplace - Realtime Inbox & Provider Subscription Gate</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Work Sans', sans-serif; background: #090d16; color: #f1f5f9; font-variant-numeric: tabular-nums; }
+    h1, h2, h3, .font-display { font-family: 'Outfit', sans-serif; }
+    .accent-pill { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid #10b98155; }
+    .accent-btn { background: #10b981; color: #090d16; font-weight: 600; }
+    .accent-btn:hover { filter: brightness(1.08); }
+    .card { background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(51, 65, 85, 0.8); border-radius: 16px; }
+  </style>
+</head>
+<body class="min-h-screen antialiased p-4 sm:p-8">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <header class="card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="space-y-1">
+        <span class="accent-pill inline-block px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold">MARKETPLACE MODULE · REACT + SUPABASE + STRIPE</span>
+        <h1 class="text-xl sm:text-2xl font-bold text-white">Trimly Marketplace - Realtime Inbox & Provider Subscription Gate</h1>
+        <p class="text-xs sm:text-sm text-slate-400">React + Node.js + Supabase Realtime Messaging (with Image Attachments) + Stripe / IAP Provider Entitlement Check</p>
+      </div>
+      <span class="text-xs font-mono text-slate-400">Interactive Architecture Testbed</span>
+    </header>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 text-xs sm:text-sm">
+      <div class="lg:col-span-5 card p-5 space-y-4">
+        <h2 class="font-bold text-white text-base">1. Provider Subscription State (Stripe + IAP Sync)</h2>
+        <div class="space-y-2">
+          <button type="button" onclick="setPlan('free')" id="btn-free" class="cursor-pointer w-full text-left p-3 rounded-xl border border-slate-700 bg-slate-950">Unsubscribed Provider (Locked from Replying)</button>
+          <button type="button" onclick="setPlan('monthly')" id="btn-monthly" class="cursor-pointer w-full text-left p-3 rounded-xl border border-slate-700 bg-slate-950">$19.99 / mo Active Plan (Web Stripe)</button>
+          <button type="button" onclick="setPlan('yearly')" id="btn-yearly" class="cursor-pointer w-full text-left p-3 rounded-xl border border-emerald-500 bg-emerald-500/10">$200 / yr Plan · 7-Day Free Trial + Intro Offer Active</button>
+        </div>
+        <div id="entitlement-box" class="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-slate-300"></div>
+      </div>
+      <div class="lg:col-span-7 card p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="font-bold text-white text-base">2. Homeowner &lt;-&gt; Snow Pro Inbox (Job #409)</h2>
+          <span id="push-pill" class="px-2.5 py-0.5 rounded text-xs font-mono bg-emerald-500/20 text-emerald-300">Realtime Channel: Connected</span>
+        </div>
+        <div id="chat-feed" class="space-y-2.5 max-h-60 overflow-y-auto p-3 rounded-xl bg-slate-950 border border-slate-800"></div>
+        <div class="flex flex-wrap gap-2">
+          <input id="msg-in" value="Can plow your driveway by 7:30 AM - attaching equipment photo." class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white" />
+          <button type="button" onclick="sendReply(true)" class="cursor-pointer px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs">+ Driveway Photo</button>
+          <button type="button" onclick="sendReply(false)" class="cursor-pointer px-4 py-2 rounded-xl accent-btn text-xs">Send Reply</button>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+  <script>
+  
+    let plan = 'yearly';
+    const MSGS = [
+      { from: 'Homeowner (Sarah M.)', text: 'Need 4-car driveway + walkway cleared after tonight snowstorm. Gate width is 9ft.', img: 'driveway_front_snow.jpg' }
+    ];
+    function setPlan(p) {
+      plan = p;
+      ['free','monthly','yearly'].forEach(k => {
+        const el = document.getElementById('btn-' + k);
+        el.className = k === p ? 'cursor-pointer w-full text-left p-3 rounded-xl border border-emerald-500 bg-emerald-500/10 text-white font-semibold' : 'cursor-pointer w-full text-left p-3 rounded-xl border border-slate-700 bg-slate-950 text-slate-300';
+      });
+      document.getElementById('entitlement-box').textContent = JSON.stringify({
+        provider_id: "prov_8821",
+        billing_source: p === 'yearly' ? "stripe_web + apple_iap_mirrored" : p,
+        status: p === 'free' ? "inactive" : (p === 'yearly' ? "trialing (7d free + yr1 promo)" : "active"),
+        can_reply_to_jobs: p !== 'free',
+        can_post_listings: p !== 'free'
+      }, null, 2);
+      renderChat();
+    }
+    function renderChat() {
+      document.getElementById('chat-feed').innerHTML = MSGS.map(m => `
+        <div class="p-2.5 rounded-lg ${m.from.startsWith('Homeowner') ? 'bg-slate-900' : 'bg-emerald-950/50 border border-emerald-700/40'}">
+          <div class="text-[11px] text-slate-400 font-semibold">${m.from}</div>
+          <div class="text-xs text-white mt-0.5">${m.text}</div>
+          ${m.img ? `<div class="mt-1.5 inline-block px-2 py-1 rounded bg-slate-800 text-[11px] font-mono text-emerald-300">[Image Attachment: ${m.img}]</div>` : ''}
+        </div>
+      `).join('');
+    }
+    function sendReply(withPhoto) {
+      if (plan === 'free') {
+        document.getElementById('push-pill').className = 'px-2.5 py-0.5 rounded text-xs font-mono bg-rose-500/20 text-rose-300';
+        document.getElementById('push-pill').textContent = '403 BLOCKED: Active Subscription Required';
+        return;
+      }
+      const val = document.getElementById('msg-in').value.trim() || 'Available tomorrow morning!';
+      MSGS.push({ from: 'Nordic Snow & Lawn Pro', text: val, img: withPhoto ? 'plow_rig_verified.jpg' : null });
+      document.getElementById('push-pill').className = 'px-2.5 py-0.5 rounded text-xs font-mono bg-emerald-500/20 text-emerald-300';
+      document.getElementById('push-pill').textContent = 'Sent + FCM/APNs Push Queued';
+      renderChat();
+    }
+    setPlan('yearly');
+    
+  </script>
+</body>
+</html>
